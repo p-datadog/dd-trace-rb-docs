@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<link rel="stylesheet" href="toc.css">
+</head>
+<body>
+<ul class="toc">
+<li>
+<a href="#upgrading-ddtrace">Upgrading ddtrace</a><ul></ul>
+</li>
+<li>
+<a href="#from-0.x-to-1.0">From 0.x to 1.0</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-basic-upgrade">Upgrading basic usage</a><ul>
+<li>
+<a href="#1.0-configuration">Configuration</a><ul>
+<li>
+<a href="#1.0-configuration-requires">require paths have changed</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-configuration-settings">Settings have been renamed</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-configuration-instrumentation">Activating instrumentation</a><ul></ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#1.0-instrumentation">Instrumentation</a><ul><li>
+<a href="#1.0-instrumentation-service-naming">Service naming</a><ul></ul>
+</li></ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#1.0-advanced-upgrade">Upgrading advanced usage</a><ul>
+<li>
+<a href="#1.0-namespacing">Namespacing</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-trace-api">Trace API</a><ul>
+<li>
+<a href="#1.0-trace-api-removed-tracer">Removed Datadog.tracer</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-trace-api-removed-context">Removed access to Datadog::Context</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-trace-api-manual-tracing">Manual tracing &amp; trace model</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-trace-api-trace-state">Accessing trace state</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-trace-api-distributed">Distributed tracing</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-trace-api-sampling">Sampling</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-trace-api-pipeline">Processing pipeline</a><ul></ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#1.0-appendix">Appendix</a><ul>
+<li>
+<a href="#1.0-appendix-namespace">Namespace mappings</a><ul></ul>
+</li>
+<li>
+<a href="#1.0-appendix-breaking-changes">Breaking changes</a><ul></ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="upgrading-ddtrace">Upgrading ddtrace</h1>
+<h1 id="from-0.x-to-1.0">From 0.x to 1.0</h1>
+<p>Upgrading <code>ddtrace</code> from 0.x to 1.x introduces some breaking changes which are outlined below.</p>
+<p><strong>How to upgrade basic usage</strong></p>
+<p>For users with a basic implementation (configuration file + out-of-the-box instrumentation), only minor changes to your configuration file are required: most applications take just minutes to update. Check out the following sections for a step-by-step guide.</p>
+<ul>
+<li>
+<a href="#1.0-configuration">Configuration</a>
+<ul>
+<li><a href="#1.0-configuration-requires"><code>require</code> paths have changed</a></li>
+<li><a href="#1.0-configuration-settings">Settings have been renamed</a></li>
+<li><a href="#1.0-configuration-instrumentation">Activating instrumentation</a></li>
+</ul>
+</li>
+<li>
+<a href="#1.0-instrumentation">Instrumentation</a>
+<ul>
+<li><a href="#1.0-instrumentation-service-naming">Service naming</a></li>
+</ul>
+</li>
+</ul>
+<p><strong>Additional upgrades for advanced usage</strong></p>
+<p>For users with an advanced implementation of <code>ddtrace</code> (custom instrumentation, sampling or processing behavior, etc), some additional namespace and behavioral changes may be required. See the following sections for details about what features changed and how to use them.</p>
+<ul>
+<li><a href="#1.0-namespacing">Namespacing</a></li>
+<li>
+<a href="#1.0-trace-api">Trace API</a>
+<ul>
+<li><a href="#1.0-trace-api-removed-tracer">Removed <code>Datadog.tracer</code></a></li>
+<li><a href="#1.0-trace-api-removed-context">Removed access to <code>Datadog::Context</code></a></li>
+<li><a href="#1.0-trace-api-manual-tracing">Manual tracing &amp; trace model</a></li>
+<li><a href="#1.0-trace-api-trace-state">Accessing trace state</a></li>
+<li>
+<a href="#1.0-trace-api-distributed">Distributed tracing</a>
+<ul>
+<li><a href="#1.0-trace-api-distributed-http">Over HTTP</a></li>
+<li><a href="#1.0-trace-api-distributed-grpc">Over gRPC</a></li>
+<li><a href="#1.0-trace-api-distributed-threads">Between threads</a></li>
+</ul>
+</li>
+<li><a href="#1.0-trace-api-sampling">Sampling</a></li>
+<li><a href="#1.0-trace-api-pipeline">Processing pipeline</a></li>
+</ul>
+</li>
+</ul>
+<p><strong>Appendix</strong></p>
+<p>For a comprehensive list of everything that changed, the appendix hosts some helpful and detailed tables with recommendations.</p>
+<ul>
+<li>
+<a href="#1.0-appendix-namespace">Namespace mappings</a>
+<ul>
+<li><a href="#1.0-appendix-namespace-constants">Constants</a></li>
+</ul>
+</li>
+<li><a href="#1.0-appendix-breaking-changes">Breaking changes</a></li>
+</ul>
+<h1 id="1.0-basic-upgrade">
+Upgrading basic usage
+</h1>
+<h2 id="1.0-configuration">
+Configuration
+</h2>
+<h3 id="1.0-configuration-requires">
+<code>require</code> paths have changed
+</h3>
+<p>If you <code>require</code> any of the following paths, update them accordingly:</p>
+<table>
+<thead>
+<tr class="header">
+<th>0.x <code>require</code> path</th>
+<th>1.0 <code>require</code> path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>ddtrace/opentelemetry</code></td>
+<td>Removed</td>
+</tr>
+<tr class="even">
+<td><code>ddtrace/opentracer</code></td>
+<td><code>datadog/opentracer</code></td>
+</tr>
+<tr class="odd">
+<td><code>ddtrace/profiling/preload</code></td>
+<td><code>datadog/profiling/preload</code></td>
+</tr>
+</tbody>
+</table>
+<p>Using <code>require 'ddtrace'</code> will load all features by default. To load individual features, you may use the following paths instead:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>1.0 <code>require</code> path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AppSec</td>
+<td><code>datadog/appsec</code></td>
+</tr>
+<tr class="even">
+<td>CI</td>
+<td><code>datadog/ci</code></td>
+</tr>
+<tr class="odd">
+<td>OpenTracing</td>
+<td><code>datadog/opentracer</code></td>
+</tr>
+<tr class="even">
+<td>Profiling</td>
+<td><code>datadog/profiling</code></td>
+</tr>
+<tr class="odd">
+<td>Tracing</td>
+<td><code>datadog/tracing</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="1.0-configuration-settings">
+Settings have been renamed
+</h3>
+<p>Configuration settings have been sorted into smaller configuration groups, by feature.</p>
+<ul>
+<li>
+<code>Datadog.configure { |c| c.* }</code>: Datadog configuration settings</li>
+<li>
+<code>Datadog.configure { |c| c.tracing.* }</code>: Tracing configuration settings</li>
+<li>
+<code>Datadog.configure { |c| c.profiling.* }</code>: Profiling configuration settings</li>
+<li>
+<code>Datadog.configure { |c| c.ci.* }</code>: CI configuration settings</li>
+</ul>
+<p>For existing applications, configuration files should be updated accordingly. For example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co"># config/initializers/datadog.rb</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>require <span class="st">'ddtrace'</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>  <span class="co"># Global settings</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>  c.tracer.hostname = <span class="st">'127.0.0.1'</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>  c.tracer.port = <span class="dv">8126</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>  c.runtime_metrics_enabled = <span class="dv">true</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>  c.service = <span class="st">'billing-api'</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>  <span class="co"># Tracing settings</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a>  c.analytics.enabled = <span class="dv">true</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>  c.tracer.partial_flush.enabled = <span class="dv">true</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a>  <span class="co"># CI settings</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true"></a>  c.ci_mode = (<span class="dt">ENV</span>[<span class="st">'DD_ENV'</span>] == <span class="st">'ci'</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true"></a>  <span class="co"># Instrumentation</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true"></a>  c.use <span class="st">:rails</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true"></a>  c.use <span class="st">:redis</span>, <span class="st">service_name: 'billing-redis'</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true"></a>  c.use <span class="st">:rspec</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true"></a>  <span class="co"># Global settings</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true"></a>  c.agent.host = <span class="st">'127.0.0.1'</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true"></a>  c.agent.port = <span class="dv">8126</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true"></a>  c.runtime_metrics.enabled = <span class="dv">true</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true"></a>  c.service = <span class="st">'billing-api'</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true"></a></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true"></a>  <span class="co"># Tracing settings</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true"></a>  c.tracing.analytics.enabled = <span class="dv">true</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true"></a>  c.tracing.partial_flush.enabled = <span class="dv">true</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true"></a>  <span class="co"># CI settings</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true"></a>  c.ci.enabled = (<span class="dt">ENV</span>[<span class="st">'DD_ENV'</span>] == <span class="st">'ci'</span>)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true"></a></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true"></a>  <span class="co"># Instrumentation</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:rails</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:redis</span>, <span class="st">service_name: 'billing-redis'</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true"></a>  c.ci.instrument <span class="st">:rspec</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<p>Check out the table below for a list of common mappings:</p>
+<table>
+<thead>
+<tr class="header">
+<th>0.x setting</th>
+<th>1.0 setting</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>analytics.enabled</code></td>
+<td><code>tracing.analytics.enabled</code></td>
+</tr>
+<tr class="even">
+<td><code>ci_mode.context_flush</code></td>
+<td><code>ci.context_flush</code></td>
+</tr>
+<tr class="odd">
+<td><code>ci_mode.enabled</code></td>
+<td><code>ci.enabled</code></td>
+</tr>
+<tr class="even">
+<td><code>ci_mode.writer_options</code></td>
+<td><code>ci.writer_options</code></td>
+</tr>
+<tr class="odd">
+<td><code>distributed_tracing</code></td>
+<td><code>tracing.distributed_tracing</code></td>
+</tr>
+<tr class="even">
+<td><code>logger=</code></td>
+<td><code>logger.instance=</code></td>
+</tr>
+<tr class="odd">
+<td><code>profiling.exporter.transport_options</code></td>
+<td>Removed</td>
+</tr>
+<tr class="even">
+<td><code>report_hostname</code></td>
+<td><code>tracing.report_hostname</code></td>
+</tr>
+<tr class="odd">
+<td><code>runtime_metrics_enabled</code></td>
+<td><code>runtime_metrics.enabled</code></td>
+</tr>
+<tr class="even">
+<td><code>runtime_metrics(options)</code></td>
+<td>Removed</td>
+</tr>
+<tr class="odd">
+<td><code>sampling</code></td>
+<td><code>tracing.sampling</code></td>
+</tr>
+<tr class="even">
+<td><code>test_mode</code></td>
+<td><code>tracing.test_mode</code></td>
+</tr>
+<tr class="odd">
+<td><code>tracer=</code></td>
+<td>Removed</td>
+</tr>
+<tr class="even">
+<td><code>tracer.debug</code></td>
+<td><code>diagnostics.debug</code></td>
+</tr>
+<tr class="odd">
+<td><code>tracer.enabled</code></td>
+<td><code>tracing.enabled</code></td>
+</tr>
+<tr class="even">
+<td><code>tracer.env</code></td>
+<td><code>env</code></td>
+</tr>
+<tr class="odd">
+<td><code>tracer.hostname</code></td>
+<td><code>agent.host</code></td>
+</tr>
+<tr class="even">
+<td><code>tracer.instance</code></td>
+<td><code>tracing.instance</code></td>
+</tr>
+<tr class="odd">
+<td><code>tracer.log</code></td>
+<td><code>logger.instance</code></td>
+</tr>
+<tr class="even">
+<td><code>tracer.partial_flush</code></td>
+<td><code>tracing.partial_flush.enabled</code></td>
+</tr>
+<tr class="odd">
+<td><code>tracer.port</code></td>
+<td><code>agent.port</code></td>
+</tr>
+<tr class="even">
+<td><code>tracer.sampler</code></td>
+<td><code>tracing.sampler</code></td>
+</tr>
+<tr class="odd">
+<td><code>tracer.tags</code></td>
+<td><code>tags</code></td>
+</tr>
+<tr class="even">
+<td><code>tracer.transport_options</code></td>
+<td><code>tracing.transport_options</code></td>
+</tr>
+<tr class="odd">
+<td><code>tracer.transport_options(options)</code></td>
+<td>Removed</td>
+</tr>
+<tr class="even">
+<td><code>tracer.writer</code></td>
+<td><code>tracing.writer</code></td>
+</tr>
+<tr class="odd">
+<td><code>tracer.writer_options</code></td>
+<td><code>tracing.writer_options</code></td>
+</tr>
+<tr class="even">
+<td><code>use</code></td>
+<td><code>tracing.instrument</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="1.0-configuration-instrumentation">
+Activating instrumentation
+</h3>
+<ul>
+<li>The <code>use</code> function has been renamed to <code>instrument</code>.</li>
+<li>
+<code>instrument</code> has been namespaced within the feature to which it belongs.</li>
+</ul>
+<p>As an example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>  <span class="co"># Tracing instrumentation</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>  c.use <span class="st">:rails</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>  <span class="co"># CI instrumentation</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>  c.use <span class="st">:cucumber</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>  <span class="co"># Tracing instrumentation</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:rails</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a>  <span class="co"># CI instrumentation</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a>  c.ci.instrument <span class="st">:cucumber</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<p>Similarly, if you were accessing configuration for instrumentation, you will need to use the appropriate namespace:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a><span class="dt">Datadog</span>.configuration[<span class="st">:rails</span>][<span class="st">:service_name</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a><span class="dt">Datadog</span>.configuration[<span class="st">:cucumber</span>][<span class="st">:service_name</span>]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a><span class="dt">Datadog</span>.configuration.tracing[<span class="st">:rails</span>][<span class="st">:service_name</span>]</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a><span class="dt">Datadog</span>.configuration.ci[<span class="st">:cucumber</span>][<span class="st">:service_name</span>]</span></code></pre></div>
+<h2 id="1.0-instrumentation">
+Instrumentation
+</h2>
+<h3 id="1.0-instrumentation-service-naming">
+Service naming
+</h3>
+<p><strong>Define an application service name</strong></p>
+<p>We recommend setting the application’s service name with <code>DD_SERVICE</code>, or by adding the following configuration:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>  c.service = <span class="st">'billing-api'</span> <span class="co"># Or DD_SERVICE. Defaults to process name.</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<p>If this is not set, it will default to the process name.</p>
+<p><strong>Update service names for your integrations</strong></p>
+<p>Spans now inherit the global <code>service</code> name by default, unless otherwise explicitly set. This means, generally speaking, spans generated by Datadog integrations will default to the global <code>service</code> name, unless the <code>service_name</code> setting is configured for that integration.</p>
+<p>Spans that describe external services (e.g. <code>mysql</code>) will continue to default to some other name that describes the external service instead. (e.g. <code>mysql</code>)</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>  <span class="co"># Instrumentation that measures internal behavior</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  c.use <span class="st">:rails</span>, <span class="st">service_name: 'billing-api'</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>  c.use <span class="st">:resque</span>, <span class="st">service_name: 'billing-api'</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>  c.use <span class="st">:sidekiq</span>, <span class="st">service_name: 'billing-api'</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>  <span class="co"># Instrumentation that measures external services</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>  c.use <span class="st">:active_record</span>, <span class="st">service_name: 'billing-api_mysql'</span> <span class="co"># Defaults to DB type e.g. mysql</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>  c.use <span class="st">:http</span>, <span class="st">service_name: 'billing-api_http'</span> <span class="co"># Defaults to net/http</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>  c.use <span class="st">:redis</span>, <span class="st">service_name: 'billing-api_redis'</span> <span class="co"># Defaults to redis</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>  c.service = <span class="st">'billing-api'</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>  <span class="co"># Instrumentation that measures internal behavior</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>  <span class="co"># now inherits the application's service name.</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:rails</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:resque</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:sidekiq</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a>  <span class="co"># Instrumentation that measures external services</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a>  <span class="co"># defaults to adapter-specific names. You may still override</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a>  <span class="co"># these names with the `service_name:` option.</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:active_record</span>, <span class="st">service_name: 'billing-api_mysql'</span> <span class="co"># Defaults to DB type e.g. mysql</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:http</span>, <span class="st">service_name: 'billing-api_http'</span> <span class="co"># Defaults to net/http</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:redis</span>, <span class="st">service_name: 'billing-api_redis'</span> <span class="co"># Defaults to redis</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<p><strong>Update Rails instrumentation</strong></p>
+<p>If your application activates and configures <code>rails</code> instrumentation, you will need to adjust your settings slightly.</p>
+<p>The following options have been removed; instead, configure the underlying instrumentation directly.</p>
+<table>
+<colgroup>
+<col style="width: 41%">
+<col style="width: 58%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>0.x setting</th>
+<th>1.0 setting</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>use :rails, cache_service: &lt;SERVICE&gt;</code></td>
+<td><code>tracing.instrument :active_support, cache_service: &lt;SERVICE&gt;</code></td>
+</tr>
+<tr class="even">
+<td><code>use :rails, controller_service: &lt;SERVICE&gt;</code></td>
+<td><code>tracing.instrument :action_pack, service_name: &lt;SERVICE&gt;</code></td>
+</tr>
+<tr class="odd">
+<td><code>use :rails, database_service: &lt;SERVICE&gt;</code></td>
+<td><code>tracing.instrument :active_record, service_name: &lt;SERVICE&gt;</code></td>
+</tr>
+<tr class="even">
+<td><code>use :rails, job_service: &lt;SERVICE&gt;</code></td>
+<td><code>tracing.instrument :active_job, service_name: &lt;SERVICE&gt;</code></td>
+</tr>
+<tr class="odd">
+<td><code>use :rails, log_injection: true</code></td>
+<td>
+<code>tracing.log_injection = true</code> (Is <code>true</code> by default.)</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb6"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>  c.use <span class="st">:rails</span>, <span class="st">service_name: 'billing-api'</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>                <span class="st">cache_service: 'billing-api-cache'</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>                <span class="st">controller_service: 'billing-api-controllers'</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>                <span class="st">database_service: 'billing-api-db'</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>                <span class="st">job_service: 'billing-api-jobs'</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>                <span class="st">log_injection: </span><span class="dv">true</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>  c.service = <span class="st">'billing-api'</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:rails</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:active_support</span>, <span class="st">cache_service: 'billing-api-cache'</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:action_pack</span>, <span class="st">service_name: 'billing-api-controllers'</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:active_record</span>, <span class="st">service_name: 'billing-api-db'</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a>  c.tracing.instrument <span class="st">:active_job</span>, <span class="st">service_name: 'billing-api-jobs'</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<h1 id="1.0-advanced-upgrade">
+Upgrading advanced usage
+</h1>
+<h2 id="1.0-namespacing">
+Namespacing
+</h2>
+<p>Many files and constants within <code>ddtrace</code> have been recategorized by feature. The new categorization scheme is as follows:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Namespace</th>
+<th>File path</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Globals</td>
+<td><code>Datadog</code></td>
+<td><code>ddtrace</code></td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>CI</td>
+<td><code>Datadog::CI</code></td>
+<td><code>datadog/ci</code></td>
+</tr>
+<tr class="even">
+<td>Core (Internals)</td>
+<td><code>Datadog::Core</code></td>
+<td><code>datadog/core</code></td>
+</tr>
+<tr class="odd">
+<td>OpenTelemetry</td>
+<td><code>Datadog::OpenTelemetry</code></td>
+<td><code>datadog/opentelemetry</code></td>
+</tr>
+<tr class="even">
+<td>OpenTracing</td>
+<td><code>Datadog::OpenTracer</code></td>
+<td><code>datadog/opentracer</code></td>
+</tr>
+<tr class="odd">
+<td>Profiling</td>
+<td><code>Datadog::Profiling</code></td>
+<td><code>datadog/profiling</code></td>
+</tr>
+<tr class="even">
+<td>Security</td>
+<td><code>Datadog::AppSec</code></td>
+<td><code>datadog/appsec</code></td>
+</tr>
+<tr class="odd">
+<td>Tracing</td>
+<td><code>Datadog::Tracing</code></td>
+<td><code>datadog/trace</code></td>
+</tr>
+</tbody>
+</table>
+<p>As a result, if your application referenced file paths or constants affected by this change, they will need to be updated. Check out the <a href="#1.0-appendix-namespace">namespace mappings</a> for some common cases and how to update them.</p>
+<h2 id="1.0-trace-api">
+Trace API
+</h2>
+<p>Usage of <code>Datadog.tracer</code> has been replaced with the <code>Datadog::Tracing</code> trace API. This module contains most of the functions that <code>Datadog.tracer</code> had, and most use cases will map one-to-one.</p>
+<p>For example:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.trace</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.active_span</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.active_correlation.to_s</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.trace</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.active_span</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.log_correlation</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a><span class="co"># ...and more...</span></span></code></pre></div>
+<p>See the table below for most common mappings:</p>
+<table>
+<colgroup>
+<col style="width: 45%">
+<col style="width: 21%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>0.x usage</th>
+<th>1.0 usage</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Datadog.tracer.active_correlation.to_s</code></td>
+<td><code>Datadog::Tracing.log_correlation</code></td>
+<td>Returns <code>String</code> with trace identifiers for logging.</td>
+</tr>
+<tr class="even">
+<td><code>Datadog.tracer.active_correlation</code></td>
+<td><code>Datadog::Tracing.correlation</code></td>
+<td>Returns <code>Datadog::Tracing::Correlation::Identifier</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>Datadog.tracer.active_root_span</code></td>
+<td>Removed</td>
+<td>Consider <code>Datadog::Tracing.active_trace</code> instead.</td>
+</tr>
+<tr class="even">
+<td><code>Datadog.tracer.active_span.context.sampling_priority = Datadog::Ext::Priority::USER_KEEP</code></td>
+<td><code>Datadog::Tracing.keep!</code></td>
+<td>See <a href="#1.0-trace-api-sampling">sampling</a> for details.</td>
+</tr>
+<tr class="odd">
+<td><code>Datadog.tracer.active_span.context.sampling_priority = Datadog::Ext::Priority::USER_REJECT</code></td>
+<td><code>Datadog::Tracing.reject!</code></td>
+<td>See <a href="#1.0-trace-api-sampling">sampling</a> for details.</td>
+</tr>
+<tr class="even">
+<td><code>Datadog.tracer.active_span.context</code></td>
+<td>Removed</td>
+<td>Consider <code>Datadog::Tracing.active_trace</code> instead.</td>
+</tr>
+<tr class="odd">
+<td><code>Datadog.tracer.active_span</code></td>
+<td><code>Datadog::Tracing.active_span</code></td>
+<td>See <a href="#1.0-trace-api-trace-state">trace state</a> for details.</td>
+</tr>
+<tr class="even">
+<td><code>Datadog.tracer.call_context</code></td>
+<td>Removed</td>
+<td>See <a href="#1.0-trace-api-trace-state">trace state</a> for details.</td>
+</tr>
+<tr class="odd">
+<td><code>Datadog.tracer.configure(options)</code></td>
+<td><code>Datadog.configure { \|c\| ... }</code></td>
+<td>Use configuration API instead.</td>
+</tr>
+<tr class="even">
+<td><code>Datadog.tracer.provider.context = context</code></td>
+<td><code>Datadog::Tracing.continue_trace!(digest)</code></td>
+<td>See <a href="#1.0-trace-api-distributed">distributed tracing</a> for details.</td>
+</tr>
+<tr class="odd">
+<td><code>Datadog.tracer.set_tags(tags)</code></td>
+<td><code>Datadog.configure { \|c\| c.tags = tags }</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>Datadog.tracer.shutdown!</code></td>
+<td><code>Datadog::Tracing.shutdown!</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog.tracer.start_span</code></td>
+<td><code>Datadog::Tracing.trace</code></td>
+<td>See <a href="#1.0-trace-api-manual-tracing">manual tracing</a> for details.</td>
+</tr>
+<tr class="even">
+<td><code>Datadog.tracer.trace</code></td>
+<td><code>Datadog::Tracing.trace</code></td>
+<td>See <a href="#1.0-trace-api-manual-tracing">manual tracing</a> for details.</td>
+</tr>
+</tbody>
+</table>
+<p>Also check out the functions defined within <code>Datadog::Tracing</code> in our <a href="https://www.rubydoc.info/gems/ddtrace/">public API</a> for more details on their usage.</p>
+<h3 id="1.0-trace-api-removed-tracer">
+Removed <code>Datadog.tracer</code>
+</h3>
+<p>Many of the functions accessed directly through <code>Datadog.tracer</code> have been moved to <code>Datadog::Tracing</code> instead.</p>
+<h3 id="1.0-trace-api-removed-context">
+Removed access to <code>Datadog::Context</code>
+</h3>
+<p>Direct usage of <code>Datadog::Context</code> has been removed. Previously, it was used to modify or access active trace state. Most use cases have been replaced by our <a href="https://www.rubydoc.info/gems/ddtrace/">public trace API</a>.</p>
+<h3 id="1.0-trace-api-manual-tracing">
+Manual tracing &amp; trace model
+</h3>
+<p>Manual tracing is now done through the <a href="https://www.rubydoc.info/gems/ddtrace/">public API</a>.</p>
+<p>Whereas in 0.x, the block would provide a <code>Datadog::Span</code> as <code>span</code>, in 1.0, the block provides a <code>Datadog::Tracing::SpanOperation</code> as <code>span</code> and <code>Datadog::Tracing::TraceOperation</code> as <code>trace</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.trace(<span class="st">'my.job'</span>) <span class="kw">do</span> |span|</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>  <span class="co"># Do work...</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>  <span class="co"># span =&gt; #&lt;Datadog::Tracing::Span&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.trace(<span class="st">'my.job'</span>) <span class="kw">do</span> |span, trace|</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a>  <span class="co"># Do work...</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a>  <span class="co"># span =&gt; #&lt;Datadog::Tracing::SpanOperation&gt;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a>  <span class="co"># trace =&gt; #&lt;Datadog::Tracing::TraceOperation&gt;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<p>The provided <code>span</code> is nearly identical in behavior, except access to some fields (like <code>context</code>) been removed. Instead, the provided <code>trace</code>, which models the trace itself, grants access to new functions, of which some replace old <code>span</code> behavior.</p>
+<p>For more details about new behaviors and the trace model, see <a href="https://github.com/DataDog/dd-trace-rb/pull/1783">this pull request</a>.</p>
+<h3 id="1.0-trace-api-trace-state">
+Accessing trace state
+</h3>
+<p>The public API provides new functions to access active trace data:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a><span class="co"># Retuns the active context (contains trace state)</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.call_context</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a><span class="co"># Returns the active Span</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.active_span</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a><span class="co"># Returns an immutable set of identifiers for the current trace state</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.active_correlation</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a><span class="co"># Retuns the active TraceOperation for the current thread (contains trace state)</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.active_trace</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a><span class="co"># Returns the active SpanOperation for the current thread (contains span state)</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.active_span</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a><span class="co"># Returns an immutable set of identifiers for the current trace state</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.correlation</span></code></pre></div>
+<p>Use of <code>active_root_span</code> has been removed.</p>
+<h3 id="1.0-trace-api-distributed">
+Distributed tracing
+</h3>
+<p>Previously, distributed tracing required building new <code>Datadog::Context</code> objects, then replacing the context within the tracer.</p>
+<p>Instead, users must use <code>TraceDigest</code> objects derived from a trace. <code>TraceDigest</code> represents the state of a trace. It can be used to propagate a trace across execution boundaries (processes, threads) or to continue a trace locally.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a><span class="co"># Get trace continuation from active trace</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>env = {}</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">HTTPPropagator</span>.inject(<span class="dt">Datadog</span>.tracer.call_context, env)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a>context = <span class="dt">Datadog</span>::<span class="dt">HTTPPropagator</span>.extract(env)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true"></a><span class="co"># Continue a trace: implicit continuation</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.provider.context = context</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true"></a><span class="co"># Next trace inherits trace properties</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.trace(<span class="st">'my.job'</span>) <span class="kw">do</span> |span|</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true"></a>  span.trace_id == context.trace_id</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true"></a><span class="co"># Get trace continuation from active trace</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true"></a>trace_digest = <span class="dt">Datadog</span>::<span class="dt">Tracing</span>.active_trace.to_digest</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true"></a><span class="co"># Continue a trace: implicit continuation</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true"></a><span class="co"># Digest will be "consumed" by the next `trace` operation</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.continue_trace!(trace_digest)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true"></a><span class="co"># Next trace inherits trace properties</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.trace(<span class="st">'my.job'</span>) <span class="kw">do</span> |span, trace|</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true"></a>  trace.id == trace_digest.trace_id</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true"></a><span class="co"># Second trace does NOT inherit trace properties</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.trace(<span class="st">'my.job'</span>) <span class="kw">do</span> |span, trace|</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true"></a>  trace.id != trace_digest.trace_id</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<p>New in 1.0, it’s also possible to explicitly assign a trace block to continue from a specific trace, rather than implicitly inherit an active context. This gives users fine-grained control in applications where multiple traces run concurrently in the same execution context:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a><span class="co"># Get trace continuation from active trace</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>trace_digest = <span class="dt">Datadog</span>::<span class="dt">Tracing</span>.active_trace.to_digest</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a><span class="co"># Continue a trace: explicit continuation</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a><span class="co"># Inherits trace properties from the trace digest</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.trace(<span class="st">'my.job'</span>, <span class="st">continue_from: </span>trace_digest) <span class="kw">do</span> |span, trace|</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true"></a>  trace.id == trace_digest.trace_id</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true"></a><span class="co"># Continue a trace: explicit continuation (using #continue_trace!)</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.continue_trace!(trace_digest) <span class="kw">do</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true"></a>  <span class="co"># Traces implicitly continue within the block</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true"></a>  <span class="dt">Datadog</span>::<span class="dt">Tracing</span>.trace(<span class="st">'my.job'</span>) <span class="kw">do</span> |span, trace|</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true"></a>    trace.id == trace_digest.trace_id</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true"></a>  <span class="kw">end</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<h4 id="1.0-trace-api-distributed-http">
+Over HTTP
+</h4>
+<p>To propagate active trace to a remote service:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>headers = {}</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>context = <span class="dt">Datadog</span>.tracer.call_context</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">HTTPPropagator</span>.inject!(context, headers)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a>outgoing = <span class="dt">Net</span>::<span class="dt">HTTP</span>::<span class="dt">Get</span>.new(uri)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>headers.each { |name, value| outgoing[name] = value }</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a>headers = {}</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a>trace_digest = <span class="dt">Datadog</span>::<span class="dt">Tracing</span>.active_trace.to_digest</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>::<span class="dt">Propagation</span>::<span class="dt">HTTP</span>.inject!(trace_digest, headers)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a>outgoing = <span class="dt">Net</span>::<span class="dt">HTTP</span>::<span class="dt">Get</span>.new(uri)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a>headers.each { |name, value| outgoing[name] = value }</span></code></pre></div>
+<p>To continue a trace from a remote service:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>incoming = <span class="dt">Rack</span>::<span class="dt">Request</span>.new(env)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a>context = <span class="dt">Datadog</span>::<span class="dt">HTTPPropagator</span>.extract(incoming.env)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.provider.context = context</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true"></a>incoming = <span class="dt">Rack</span>::<span class="dt">Request</span>.new(env)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true"></a>trace_digest = <span class="dt">Datadog</span>::<span class="dt">Tracing</span>::<span class="dt">Propagation</span>::<span class="dt">HTTP</span>.extract(incoming.env)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.continue_trace!(trace_digest)</span></code></pre></div>
+<h4 id="1.0-trace-api-distributed-grpc">
+Over gRPC
+</h4>
+<p>To propagate active trace to a remote service:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>context = <span class="dt">Datadog</span>.tracer.call_context</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">GRPCPropagator</span>.inject!(context, metadata)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a>trace_digest = <span class="dt">Datadog</span>::<span class="dt">Tracing</span>.active_trace.to_digest</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>::<span class="dt">Propagation</span>::<span class="dt">GRPC</span>.inject!(trace_digest, metadata)</span></code></pre></div>
+<p>To continue a trace from a remote service:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true"></a>context = <span class="dt">Datadog</span>::<span class="dt">GRPCPropagator</span>.extract(metadata)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.provider.context = context</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true"></a>trace_digest = <span class="dt">Datadog</span>::<span class="dt">Tracing</span>::<span class="dt">Propagation</span>::<span class="dt">GRPC</span>.extract(metadata)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.continue_trace!(trace_digest)</span></code></pre></div>
+<h4 id="1.0-trace-api-distributed-threads">
+Between threads
+</h4>
+<p>Traces do not implicitly propagate across threads, as they are considered different execution contexts.</p>
+<p>However, if you wish to do this, trace propagation across threads is similar to cross-process. A <code>TraceDigest</code> should be produced by the parent thread and consumed by the child thread.</p>
+<p>NOTE: The same <code>TraceOperation</code> object should never be shared between threads; this would create race conditions.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true"></a><span class="co"># Get trace digest</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true"></a>trace = <span class="dt">Datadog</span>::<span class="dt">Tracing</span>.active_trace</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true"></a><span class="co"># </span><span class="al">NOTE</span><span class="co">: We must produce the digest BEFORE starting the thread.</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true"></a><span class="co">#       Otherwise if it's lazily evaluated within the thread,</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true"></a><span class="co">#       the thread's trace may follow the wrong parent span.</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true"></a>trace_digest = trace.to_digest</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true"></a></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true"></a><span class="dt">Thread</span>.new <span class="kw">do</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true"></a>  <span class="co"># Inherits trace properties from the trace digest</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true"></a>  <span class="dt">Datadog</span>::<span class="dt">Tracing</span>.trace(<span class="st">'my.job'</span>, <span class="st">continue_from: </span>trace_digest) <span class="kw">do</span> |span, trace|</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true"></a>    trace.id == trace_digest.trace_id</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true"></a>  <span class="kw">end</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<h3 id="1.0-trace-api-sampling">
+Sampling
+</h3>
+<p>Accessing <code>call_context</code> to set explicit sampling has been removed.</p>
+<p>Instead, use the <code>TraceOperation</code> to set the sampling decision.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a><span class="co"># From within the trace:</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.trace(<span class="st">'web.request'</span>) <span class="kw">do</span> |span|</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true"></a>  span.context.sampling_priority = <span class="dt">Datadog</span>::<span class="dt">Ext</span>::<span class="dt">Priority</span>::<span class="dt">USER_REJECT</span> <span class="kw">if</span> env.path == <span class="st">'/healthcheck'</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true"></a><span class="co"># From outside the trace:</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true"></a><span class="co"># Keeps current trace</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.active_span.context.sampling_priority = <span class="dt">Datadog</span>::<span class="dt">Ext</span>::<span class="dt">Priority</span>::<span class="dt">USER_KEEP</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true"></a><span class="co"># Drops current trace</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true"></a><span class="dt">Datadog</span>.tracer.active_span.context.sampling_priority = <span class="dt">Datadog</span>::<span class="dt">Ext</span>::<span class="dt">Priority</span>::<span class="dt">USER_REJECT</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true"></a></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true"></a><span class="co"># From within the trace:</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.trace(<span class="st">'web.request'</span>) <span class="kw">do</span> |span, trace|</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true"></a>  trace.reject! <span class="kw">if</span> env.path == <span class="st">'/healthcheck'</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true"></a></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true"></a><span class="co"># From outside the trace:</span></span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.keep! <span class="co"># Keeps current trace</span></span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.reject! <span class="co"># Drops current trace</span></span></code></pre></div>
+<h3 id="1.0-trace-api-pipeline">
+Processing pipeline
+</h3>
+<p>When using a trace processor in the processing pipeline, the block provides a <code>TraceSegment</code> as <code>trace</code> (instead of <code>Array[Datadog::Span]</code>.) This object can be directly mutated.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="co">### Old 0.x </span><span class="al">###</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Pipeline</span>.before_flush <span class="kw">do</span> |trace|</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true"></a>  <span class="co"># Processing logic...</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true"></a>  trace <span class="co"># =&gt; Array[Datadog::Span]</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true"></a><span class="kw">end</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true"></a><span class="co">### New 1.0 </span><span class="al">###</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Tracing</span>.before_flush <span class="kw">do</span> |trace|</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true"></a>   <span class="co"># Processing logic...</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true"></a>   trace <span class="co"># =&gt; #&lt;Datadog::Tracing::TraceSegment&gt;</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<h2 id="1.0-appendix">
+Appendix
+</h2>
+<h3 id="1.0-appendix-namespace">
+Namespace mappings
+</h3>
+<h4 id="1.0-appendix-namespace-constants">
+Constants
+
+</h4>
+<table>
+<colgroup>
+<col style="width: 42%">
+<col style="width: 57%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>0.x Constant</code></th>
+<th><code>1.0 Constant</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Datadog::AllSampler</code></td>
+<td><code>Datadog::Tracing::Sampling::AllSampler</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Buffer</code></td>
+<td><code>Datadog::Core::Buffer::Random</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Chunker</code></td>
+<td><code>Datadog::Core::Chunker</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Configuration</code></td>
+<td><code>Datadog::Core::Configuration</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::ContextFlush</code></td>
+<td><code>Datadog::Tracing::Flush</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::CRubyBuffer</code></td>
+<td><code>Datadog::Core::Buffer::CRuby</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Diagnostics</code></td>
+<td><code>Datadog::Core::Diagnostics</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::DistributedTracing</code></td>
+<td><code>Datadog::Tracing::Distributed</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Encoding</code></td>
+<td><code>Datadog::Core::Encoding</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Error</code></td>
+<td><code>Datadog::Core::Error</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Analytics::ENV_TRACE_ANALYTICS_ENABLED</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Analytics::ENV_TRACE_ANALYTICS_ENABLED</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Analytics</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::Analytics</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::AppTypes</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::AppTypes</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Correlation::ENV_LOGS_INJECTION_ENABLED</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Correlation::ENV_LOGS_INJECTION_ENABLED</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Correlation</code></td>
+<td><code>Datadog::Tracing::Correlation::Identifier</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Diagnostics</code></td>
+<td><code>Datadog::Core::Diagnostics::Ext</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Distributed::ENV_PROPAGATION_STYLE_EXTRACT</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Distributed::ENV_PROPAGATION_STYLE_EXTRACT</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Distributed::ENV_PROPAGATION_STYLE_INJECT</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Distributed::ENV_PROPAGATION_STYLE_INJECT</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Distributed::PROPAGATION_STYLE_B3_SINGLE_HEADER</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Distributed::PROPAGATION_STYLE_B3_SINGLE_HEADER</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Distributed::PROPAGATION_STYLE_B3</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Distributed::PROPAGATION_STYLE_B3</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Distributed::PROPAGATION_STYLE_DATADOG</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Distributed::PROPAGATION_STYLE_DATADOG</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Distributed</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::Distributed</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::DistributedTracing::TAG_ORIGIN</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::Distributed::TAG_ORIGIN</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::DistributedTracing::TAG_SAMPLING_PRIORITY</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::Distributed::TAG_SAMPLING_PRIORITY</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::DistributedTracing</code></td>
+<td><code>Datadog::Tracing::Distributed::Headers::Ext</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Environment</code></td>
+<td><code>Datadog::Core::Environment::Ext</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Errors</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::Errors</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Git</code></td>
+<td><code>Datadog::Core::Git::Ext</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::HTTP</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::HTTP</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Integration</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::NET::ENV_REPORT_HOSTNAME</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::NET::ENV_REPORT_HOSTNAME</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::NET</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::NET</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Priority</code></td>
+<td><code>Datadog::Tracing::Sampling::Ext::Priority</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Runtime</code></td>
+<td><code>Datadog::Core::Runtime::Ext</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Sampling::ENV_RATE_LIMIT</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Sampling::ENV_RATE_LIMIT</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Sampling::ENV_SAMPLE_RATE</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Sampling::ENV_SAMPLE_RATE</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Sampling</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::Sampling</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::SQL</code></td>
+<td><code>Datadog::Tracing::Metadata::Ext::SQL</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Test</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Test</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Transport::HTTP::ENV_DEFAULT_HOST</code></td>
+<td><code>Datadog::Core::Configuration::Ext::Transport::ENV_DEFAULT_HOST</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Transport::HTTP::ENV_DEFAULT_PORT</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Transport::ENV_DEFAULT_PORT</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Ext::Transport::HTTP::ENV_DEFAULT_URL</code></td>
+<td><code>Datadog::Tracing::Configuration::Ext::Transport::ENV_DEFAULT_URL</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Ext::Transport</code></td>
+<td><code>Datadog::Transport::Ext</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::GRPCPropagator</code></td>
+<td><code>Datadog::Tracing::Propagation::GRPC</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::HTTPPropagator</code></td>
+<td><code>Datadog::Tracing::Propagation::HTTP</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Logger</code></td>
+<td><code>Datadog::Core::Logger</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Metrics</code></td>
+<td><code>Datadog::Core::Metrics::Client</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::PrioritySampler</code></td>
+<td><code>Datadog::Tracing::Sampling::PrioritySampler</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Quantization</code></td>
+<td><code>Datadog::Contrib::Utils::Quantization</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::RateByKeySampler</code></td>
+<td><code>Datadog::Tracing::Sampling::RateByKeySampler</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::RateByServiceSampler</code></td>
+<td><code>Datadog::Tracing::Sampling::RateByServiceSampler</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::RateSampler</code></td>
+<td><code>Datadog::Tracing::Sampling::RateSampler</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Runtime</code></td>
+<td><code>Datadog::Core::Runtime</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Sampler</code></td>
+<td><code>Datadog::Tracing::Sampling::Sampler</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Tagging::Analytics</code></td>
+<td><code>Datadog::Tracing::Metadata::Analytics</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Tagging::Metadata</code></td>
+<td><code>Datadog::Tracing::Metadata::Tagging</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::ThreadSafeBuffer</code></td>
+<td><code>Datadog::Core::Buffer::ThreadSafe</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Utils</code></td>
+<td><code>Datadog::Core::Utils</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Vendor::ActiveRecord</code></td>
+<td><code>Datadog::Contrib::ActiveRecord::Vendor</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Vendor::Multipart</code></td>
+<td><code>Datadog::Core::Vendor::Multipart</code></td>
+</tr>
+<tr class="odd">
+<td><code>Datadog::Worker</code></td>
+<td><code>Datadog::Core::Worker</code></td>
+</tr>
+<tr class="even">
+<td><code>Datadog::Workers</code></td>
+<td><code>Datadog::Core::Workers</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="1.0-appendix-breaking-changes">
+Breaking changes
+</h3>
+<table>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 2%">
+<col style="width: 34%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>Category</strong></th>
+<th><strong>Type</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Change / Alternative</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>General</td>
+<td>Changed</td>
+<td>Many constants have been moved from <code>Datadog</code> to <code>Datadog::Core</code>, <code>Datadog::Tracing</code>
+</td>
+<td>Update your references to these <a href="#1.0-appendix-namespace-constants">new namespaces</a> where appropriate.</td>
+</tr>
+<tr class="even">
+<td>General</td>
+<td>Changed</td>
+<td>Some <code>require</code> paths have been moved from <code>ddtrace</code> to <code>datadog</code>
+</td>
+<td>Update your references to these <a href="#1.0-appendix-namespace-requires">new paths</a> where appropriate.</td>
+</tr>
+<tr class="odd">
+<td>General</td>
+<td>Removed</td>
+<td>Support for trace agent API v0.2</td>
+<td>Use v0.4 instead (default behavior.)</td>
+</tr>
+<tr class="even">
+<td>General</td>
+<td>Removed</td>
+<td>
+<code>Datadog.configure</code> can no longer be called without a block</td>
+<td>Remove uses of <code>Datadog.configure</code> without a block.</td>
+</tr>
+<tr class="odd">
+<td>CI API</td>
+<td>Changed</td>
+<td>
+<code>DD_TRACE_CI_MODE_ENABLED</code> environment variable is now <code>DD_TRACE_CI_ENABLED</code>
+</td>
+<td>Use <code>DD_TRACE_CI_ENABLED</code> instead.</td>
+</tr>
+<tr class="even">
+<td>Configuration</td>
+<td>Changed</td>
+<td>Many settings have been namespaced under specific categories</td>
+<td>Update your configuration to these <a href="#1.0-configuration-settings">new settings</a> where appropriate.</td>
+</tr>
+<tr class="odd">
+<td>Configuration</td>
+<td>Removed</td>
+<td><code>Datadog.configure(client, options)</code></td>
+<td>Use <code>Datadog.configure_onto(client, options)</code> instead.</td>
+</tr>
+<tr class="even">
+<td>Configuration</td>
+<td>Removed</td>
+<td>
+<code>DD_#{integration}_ANALYTICS_ENABLED</code> and <code>DD_#{integration}_ANALYTICS_SAMPLE_RATE</code> environment variables</td>
+<td>Use <code>DD_TRACE_#{integration}_ANALYTICS_ENABLED</code> and <code>DD_TRACE_#{integration}_ANALYTICS_SAMPLE_RATE</code> instead.</td>
+</tr>
+<tr class="odd">
+<td>Configuration</td>
+<td>Removed</td>
+<td>
+<code>DD_PROPAGATION_INJECT_STYLE</code> and <code>DD_PROPAGATION_EXTRACT_STYLE</code> environment variables</td>
+<td>Use <code>DD_TRACE_PROPAGATION_STYLE_INJECT</code> and <code>DD_TRACE_PROPAGATION_STYLE_EXTRACT</code> instead.</td>
+</tr>
+<tr class="even">
+<td>Integrations</td>
+<td>Changed</td>
+<td>
+<code>-</code> in HTTP header tag names are kept, and no longer replaced with <code>_</code>
+</td>
+<td>For example: <code>http.response.headers.content_type</code> is changed to <code>http.response.headers.content-type</code>.</td>
+</tr>
+<tr class="odd">
+<td>Integrations</td>
+<td>Changed</td>
+<td>
+<code>Contrib::Configurable#default_configuration</code> moved to <code>Tracing::Contrib::Configurable#new_configuration</code>
+</td>
+<td>Use <code>Tracing::Contrib::Configurable#new_configuration</code> instead.</td>
+</tr>
+<tr class="even">
+<td>Integrations</td>
+<td>Changed</td>
+<td>
+<code>Datadog.configuration.registry</code> moved to <code>Datadog.registry</code>
+</td>
+<td>Use <code>Datadog.registry</code> instead.</td>
+</tr>
+<tr class="odd">
+<td>Integrations</td>
+<td>Changed</td>
+<td>
+<code>service_name</code> option from each integration uses the default service name, unless it represents an external service</td>
+<td>Set <code>c.service</code> or <code>DD_SERVICE</code>, and remove <code>service_name</code> option from integration to inherit default service name. Set <code>service_name</code> option on integration to override.</td>
+</tr>
+<tr class="even">
+<td>Integrations</td>
+<td>Removed</td>
+<td>
+<code>tracer</code> integration option from all integrations</td>
+<td>Remove this option from your configuration.</td>
+</tr>
+<tr class="odd">
+<td>Integrations - ActiveJob</td>
+<td>Removed</td>
+<td>
+<code>log_injection</code> option</td>
+<td>Use <code>c.tracing.log_injection</code> instead.</td>
+</tr>
+<tr class="even">
+<td>Integrations - ActiveModelSerializers</td>
+<td>Removed</td>
+<td>service_name configuration</td>
+<td>Remove this option from your configuration.</td>
+</tr>
+<tr class="odd">
+<td>Integrations - ConcurrentRuby</td>
+<td>Removed</td>
+<td>unused option <code>service_name</code>
+</td>
+<td>Remove this option from your configuration.</td>
+</tr>
+<tr class="even">
+<td>Integrations - Presto</td>
+<td>Changed</td>
+<td>
+<code>out.host</code> tag now contains only client hostname. Before it contained <code>"#{hostname}:#{port}"</code>.</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Integrations - Rails</td>
+<td>Changed</td>
+<td>
+<code>service_name</code> does not propagate to sub-components (e.g. <code>c.use :rails, cache_service: 'my-cache'</code>)</td>
+<td>Use <code>c.service</code> instead.</td>
+</tr>
+<tr class="even">
+<td>Integrations - Rails</td>
+<td>Changed</td>
+<td>Sub-components service_name options are now consistently called <code>:service_name</code>
+</td>
+<td>Update your configuration to use <code>:service_name</code>.</td>
+</tr>
+<tr class="odd">
+<td>Integrations - Rails</td>
+<td>Changed</td>
+<td>Trace-logging correlation is enabled by default</td>
+<td>Can be disabled using the environment variable <code>DD_LOGS_INJECTION=false</code>.</td>
+</tr>
+<tr class="even">
+<td>Integrations - Rails</td>
+<td>Removed</td>
+<td>
+<code>log_injection</code> option.</td>
+<td>Use global <code>c.tracing.log_injection</code> instead.</td>
+</tr>
+<tr class="odd">
+<td>Integrations - Rails</td>
+<td>Removed</td>
+<td>
+<code>orm_service_name</code> option.</td>
+<td>Remove this option from your configuration.</td>
+</tr>
+<tr class="even">
+<td>Integrations - Rails</td>
+<td>Removed</td>
+<td>3.0 and 3.1 support.</td>
+<td>Not supported.</td>
+</tr>
+<tr class="odd">
+<td>Integrations - Resque</td>
+<td>Removed</td>
+<td>
+<code>workers</code> option. (All Resque workers are now automatically instrumented.)</td>
+<td>Remove this option from your configuration.</td>
+</tr>
+<tr class="even">
+<td>Tracing API</td>
+<td>Changed</td>
+<td>
+<code>Correlation#to_s</code> to <code>Correlation#to_log_format</code>
+</td>
+<td>Use <code>Datadog::Tracing.log_correlation</code> instead.</td>
+</tr>
+<tr class="odd">
+<td>Tracing API</td>
+<td>Changed</td>
+<td>
+<code>Tracer#trace</code> implements keyword args</td>
+<td>Omit invalid options from <code>trace</code> calls.</td>
+</tr>
+<tr class="even">
+<td>Tracing API</td>
+<td>Changed</td>
+<td>Distributed tracing takes and returns <code>TraceDigest</code> instead of <code>Context</code>
+</td>
+<td>Update your usage of distributed tracing to use <code>continue_from</code> and <code>to_digest</code>.</td>
+</tr>
+<tr class="odd">
+<td>Tracing API</td>
+<td>Changed</td>
+<td>Rules for RuleSampler now return <code>TraceOperation</code> instead of <code>Span</code>
+</td>
+<td>Update Rule sampler usage to use <code>TraceOperation</code>.</td>
+</tr>
+<tr class="even">
+<td>Tracing API</td>
+<td>Changed</td>
+<td>Trace processors return <code>TraceSegment</code> instead of <code>Array[Span]</code>
+</td>
+<td>Update pipeline callbacks to use <code>TraceSegment instead.                                                                                                                   | | Tracing API                           | Removed  |</code>child_of:<code>option from</code>Tracer#trace<code>| Not supported.                                                                                                                                                            | | Tracing API                           | Removed  |</code>Datadog.tracer<code>| Use methods in</code>Datadog::Tracing<code>instead.                                                                                                                                | | Tracing API                           | Removed  |</code>Pin.get_from(client)<code>| Use</code>Datadog::Tracing.configure_for(client)<code>instead.                                                                                                                     | | Tracing API                           | Removed  |</code>Pin.new(service, config: { option: value }).onto(client)<code>| Use</code>Datadog.configure_onto(client, service_name: service, option: value)<code>instead.                                                                              | | Tracing API                           | Removed  |</code>Pipeline.before_flush<code>| Use</code>Datadog::Tracing.before_flush<code>instead.                                                                                                                              | | Tracing API                           | Removed  |</code>SpanOperation#context<code>| Use</code>Datadog::Tracing.active_trace<code>instead.                                                                                                                              | | Tracing API                           | Removed  |</code>SpanOperation#parent<code>/</code>SpanOperation#parent=<code>| Not supported.                                                                                                                                                            | | Tracing API                           | Removed  |</code>SpanOperation#sampled<code>| Use</code>Datadog::Tracing::TraceOperation#sampled?<code>instead.                                                                                                                           | | Tracing API                           | Removed  |</code>Tracer#active_correlation.to_log_format<code>| Use</code>Datadog::Tracing.log_correlation<code>instead.                                                                                                                           | | Tracing API                           | Removed  |</code>Tracer#active_correlation<code>| Use</code>Datadog::Tracing.correlation<code>instead.                                                                                                                               | | Tracing API                           | Removed  |</code>Tracer#active_root_span<code>| Use</code>Datadog::Tracing.active_trace<code>instead.                                                                                                                              | | Tracing API                           | Removed  |</code>Tracer#build_span<code>| Use</code>Datadog::Tracing.trace<code>instead.                                                                                                                                     | | Tracing API                           | Removed  |</code>Tracer#call_context<code>| Use</code>Datadog::Tracing.active_trace<code>instead.                                                                                                                              | | Tracing API                           | Removed  |</code>Tracer#configure<code>| Not supported.                                                                                                                                                            | | Tracing API                           | Removed  |</code>Tracer#services<code>| Not supported.                                                                                                                                                            | | Tracing API                           | Removed  |</code>Tracer#set_service_info<code>| Not supported.                                                                                                                                                            | | Tracing API                           | Removed  |</code>Tracer#start_span<code>| Use</code>Datadog::Tracing.trace<code>instead.                                                                                                                                     | | Tracing API                           | Removed  |</code>Writer#write<code>and</code>SyncWriter#write<code></code>services` argument</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

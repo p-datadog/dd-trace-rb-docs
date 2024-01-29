@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<link rel="stylesheet" href="toc.css">
+</head>
+<body>
+<ul class="toc"><li>
+<a href="#auto-instrumentation">Auto Instrumentation</a><ul>
+<li>
+<a href="#rails">Rails</a><ul></ul>
+</li>
+<li>
+<a href="#hanami">Hanami</a><ul></ul>
+</li>
+<li>
+<a href="#ruby">Ruby</a><ul></ul>
+</li>
+<li>
+<a href="#additional-configuration">Additional configuration</a><ul></ul>
+</li>
+<li>
+<a href="#custom-integrations">Custom integrations</a><ul></ul>
+</li>
+</ul>
+</li></ul>
+<h1 id="auto-instrumentation">Auto Instrumentation</h1>
+<p><code>ddtrace</code> can automatically instrument all available libraries, without requiring the manual setup of each one.</p>
+<h2 id="rails">Rails</h2>
+<p>Add the following to your <code>Gemfile</code>/<code>gems.rb</code> file:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>source <span class="st">'https://rubygems.org'</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>gem <span class="st">'ddtrace'</span>, require: <span class="st">'ddtrace/auto_instrument'</span></span></code></pre></div>
+<h2 id="hanami">Hanami</h2>
+<p>Add the following to your <code>Gemfile</code>/<code>gems.rb</code> file:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>source <span class="st">'https://rubygems.org'</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>gem <span class="st">'ddtrace'</span>, require: <span class="st">'ddtrace/auto_instrument'</span></span></code></pre></div>
+<h2 id="ruby">Ruby</h2>
+<p>Require <code>'ddtrace/auto_instrument'</code> after all gems that you’d like to instrument have been loaded:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="co"># Example libraries with supported integrations</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>require <span class="st">'sinatra'</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>require <span class="st">'faraday'</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>require <span class="st">'redis'</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>require <span class="st">'ddtrace/auto_instrument'</span></span></code></pre></div>
+<h2 id="additional-configuration">Additional configuration</h2>
+<p>You can reconfigure, override, or disable any specific integration settings by adding a <a href="GettingStarted.md#integration-instrumentation"><code>Datadog.configure</code></a> call after <code>ddtrace/auto_instrument</code> is activated.</p>
+<h2 id="custom-integrations">Custom integrations</h2>
+<p>Custom integrations that want to support auto instrumentation need to be registered (e.g. invoke their {Datadog::Tracing::Contrib::Registerable::ClassMethods#register_as} method) before the tracer requires <code>'ddtrace/auto_instrument'</code>.</p>
+</body>
+</html>

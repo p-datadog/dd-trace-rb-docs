@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<link rel="stylesheet" href="toc.css">
+</head>
+<body>
+<ul class="toc"></ul>
+<p><strong>ATTENTION</strong>:</p>
+<p><strong><em>OpenTelemetry support is currently “experimental”. It may be subject to breaking changes between minor versions, and is not yet recommended for use in production or other sensitive environments.</em></strong></p>
+<p>If you are interested in using this feature experimentally, please contact the dd-trace-rb maintainers; we would be happy to provide you with more information!</p>
+<p><strong>Supported tracing frameworks</strong>:</p>
+<table>
+<colgroup>
+<col style="width: 13%">
+<col style="width: 52%">
+<col style="width: 15%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Documentation</th>
+<th>ddtrace version</th>
+<th>Gem version support</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OpenTelemetry</td>
+<td>https://github.com/open-telemetry/opentelemetry-ruby</td>
+<td>1.9.0+</td>
+<td>&gt;= 1.1.0</td>
+</tr>
+</tbody>
+</table>
+<h4 id="configuring-opentelemetry">Configuring OpenTelemetry</h4>
+<ol type="1">
+<li>
+<p>Add the <code>ddtrace</code> gem to your Gemfile:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>source <span class="st">'https://rubygems.org'</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>gem <span class="st">'ddtrace'</span></span></code></pre></div>
+</li>
+<li><p>Install the gem with <code>bundle install</code></p></li>
+<li>
+<p>To your OpenTelemetry configuration file, add the following:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>require <span class="st">'opentelemetry/sdk'</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>require <span class="st">'datadog/opentelemetry'</span></span></code></pre></div>
+</li>
+<li>
+<p>Add a configuration block to your application:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>  <span class="co"># Configure the Datadog tracer here.</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>  <span class="co"># Activate integrations, change tracer settings, etc...</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>  <span class="co"># By default without additional configuration,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>  <span class="co"># no additional integrations will be traced, only</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>  <span class="co"># what you have instrumented with OpenTelemetry.</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<p>Using this block you can:</p>
+<ul>
+<li><a href="#additional-configuration">Add additional Datadog configuration settings</a></li>
+<li><a href="#integration-instrumentation">Activate or reconfigure Datadog instrumentation</a></li>
+</ul>
+</li>
+<li>
+<p>OpenTelemetry spans and Datadog APM spans will now be combined into a single trace your application.</p>
+<p><a href="#integration-instrumentation">Integration instrumentations</a> and OpenTelemetry <a href="https://opentelemetry.io/docs/instrumentation/ruby/automatic/">Automatic instrumentations</a> are also supported.</p>
+</li>
+</ol>
+<h5 id="limitations">Limitations</h5>
+<p>There are a few limitations to OpenTelemetry Tracing when the APM integration is activated:</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 41%">
+<col style="width: 4%">
+<col style="width: 31%">
+<col style="width: 20%">
+<col style="width: 1%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Support?</th>
+<th>Explanation</th>
+<th>Recommendation</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://opentelemetry.io/docs/instrumentation/ruby/manual/#context-propagation">Context propagation</a></td>
+<td>Unsupported</td>
+<td>Datadog <a href="#distributed-header-formats">distributed header format</a> is used instead.</td>
+<td>N/A</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><a href="https://opentelemetry.io/docs/reference/specification/trace/sdk/#span-processor">Span processors</a></td>
+<td>Unsupported</td>
+<td></td>
+<td>N/A</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><a href="https://opentelemetry.io/docs/reference/specification/trace/sdk/#span-exporter">Span Exporters</a></td>
+<td>Unsupported</td>
+<td></td>
+<td>N/A</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>OpenTelemetry.logger</code></td>
+<td>Special</td>
+<td>
+<code>OpenTelemetry.logger</code> is set to the same object as <code>Datadog.logger</code>.</td>
+<td>Configure through <a href="#custom-logging">Custom logging</a>.</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Trace/span <a href="https://opentelemetry.io/docs/reference/specification/trace/sdk/#id-generators">ID generators</a>
+</td>
+<td>Special</td>
+<td>ID generation is performed by <code>ddtrace</code>.</td>
+<td>N/A</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h5 id="exporting-opentelemetry-only-traces">Exporting OpenTelemetry-only traces</h5>
+<p>You can send OpenTelemetry traces directly to the Datadog agent (without <code>ddtrace</code>) by using <a href="https://open-telemetry.github.io/opentelemetry-ruby/opentelemetry-exporter-otlp/latest">OTLP</a>. Check out our documentation on <a href="https://docs.datadoghq.com/tracing/setup_overview/open_standards/#otlp-ingest-in-datadog-agent">OTLP ingest in the Datadog Agent</a> for details.</p>
+<p>Datadog APM spans will not be sent through the OTLP exporter.</p>
+</body>
+</html>

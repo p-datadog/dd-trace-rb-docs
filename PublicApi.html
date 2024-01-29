@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<link rel="stylesheet" href="toc.css">
+</head>
+<body>
+<ul class="toc"><li>
+<a href="#public-api">Public API</a><ul></ul>
+</li></ul>
+<h1 id="public-api">Public API</h1>
+<p><code>ddtrace</code> respects <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning 2.0.0</a>.</p>
+<p>Classes, modules, and methods marked as part of the public API will not introduce breaking changes outside of a major version release.</p>
+<p>Objects that belong to the public API are marked with the <code>@public_api</code> YARD documentation tag. When navigating <a href="https://rubydoc.info/gems/ddtrace"><code>ddtrace</code>’s YARD documentation</a>, public API objects will have an explicit banner informing the user that they are part of the public API contract.</p>
+<p>Objects not marked with the <code>@public_api</code> tag are not part of the public API contract, and thus considered internal to <code>ddtrace</code>. These objects can receive breaking changes in minor and patch releases.</p>
+</body>
+</html>

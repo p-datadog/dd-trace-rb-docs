@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<link rel="stylesheet" href="toc.css">
+</head>
+<body>
+<ul class="toc"><li>
+<a href="#developing">Developing</a><ul>
+<li>
+<a href="#table-of-contents">Table of Contents</a><ul></ul>
+</li>
+<li>
+<a href="#setting-up">Setting up</a><ul></ul>
+</li>
+<li>
+<a href="#testing">Testing</a><ul>
+<li>
+<a href="#writing-tests">Writing tests</a><ul></ul>
+</li>
+<li>
+<a href="#running-tests">Running tests</a><ul></ul>
+</li>
+<li>
+<a href="#checking-code-quality">Checking code quality</a><ul></ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#appendix">Appendix</a><ul>
+<li>
+<a href="#writing-new-integrations">Writing new integrations</a><ul></ul>
+</li>
+<li>
+<a href="#custom-transport-adapters">Custom transport adapters</a><ul></ul>
+</li>
+<li>
+<a href="#generating-grpc-proto-stubs-for-tests">Generating GRPC proto stubs for tests</a><ul></ul>
+</li>
+</ul>
+</li>
+</ul>
+</li></ul>
+<h1 id="developing">Developing</h1>
+<p>This guide covers some of the common how-tos and technical reference material for developing changes within the trace library.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#setting-up">Setting up</a></li>
+<li>
+<a href="#testing">Testing</a>
+<ul>
+<li><a href="#writing-tests">Writing tests</a></li>
+<li><a href="#running-tests">Running tests</a></li>
+<li><a href="#checking-code-quality">Checking code quality</a></li>
+</ul>
+</li>
+<li>
+<a href="#appendix">Appendix</a>
+<ul>
+<li><a href="#writing-new-integrations">Writing new integrations</a></li>
+<li><a href="#custom-transport-adapters">Custom transport adapters</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="setting-up">Setting up</h2>
+<p><em>NOTE: To test locally, you must have <code>Docker</code> and <code>Docker Compose</code> installed. See the <a href="https://docs.docker.com/compose/install/">Docker documentation</a> for details.</em></p>
+<p>The trace library uses Docker Compose to create a Ruby environment to develop and test within, as well as containers for any dependencies that might be necessary for certain kinds of tests.</p>
+<p>To start a development environment, choose a target Ruby version then run the following:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co"># In the root directory of the project...</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="bu">cd</span> ~/dd-trace-rb</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="co"># Create and start a Ruby 3.0 test environment with its dependencies</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="ex">docker-compose</span> run --rm tracer-3.0 /bin/bash</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="co"># Then inside the container (e.g. `root@2a73c6d8673e:/app`)...</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="co"># Install the library dependencies</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="ex">bundle</span> install</span></code></pre></div>
+<p>Then within this container you can <a href="#running-tests">run tests</a>, or <a href="#checking-code-quality">run code quality checks</a>.</p>
+<h2 id="testing">Testing</h2>
+<p>The test suite uses <a href="https://rspec.info/">RSpec</a> tests to verify the correctness of both the core trace library and its integrations.</p>
+<h3 id="writing-tests">Writing tests</h3>
+<p>New tests should be written as RSpec tests in the <code>spec/datadog</code> folder. Test files should generally mirror the structure of <code>lib</code>.</p>
+<p>All changes should be covered by a corresponding RSpec tests. Unit tests are preferred, and integration tests are accepted where appropriate (e.g. acceptance tests, verifying compatibility with datastores, etc) but should be kept to a minimum.</p>
+<p><strong>Considerations for CI</strong></p>
+<p>All tests should run in CI. When adding new <code>_spec.rb</code> files, you may need to add rake task to ensure your test file is run in CI.</p>
+<ul>
+<li>Ensure that there is a corresponding Rake task defined in <code>Rakefile</code> under the <code>spec</code> namespace, whose pattern matches your test file. For example</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a>  namespace <span class="st">:spec</span> <span class="kw">do</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>    <span class="dt">RSpec</span>::<span class="dt">Core</span>::<span class="dt">RakeTask</span>.new(<span class="st">:foo</span>) <span class="kw">do</span> |t, args|</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>      t.pattern = <span class="st">"spec/datadog/tracing/contrib/bar/**/*_spec.rb"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>      t.rspec_opts = args.to_a.join(<span class="ch">' '</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>    <span class="kw">end</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>  <span class="kw">end</span></span></code></pre></div>
+<ul>
+<li>Ensure the Rake task is configured to run for the appropriate Ruby runtimes, by introducing it to our test matrix. You should find the task with <code>bundle exec rake -T test:&lt;foo&gt;</code>.</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a>  <span class="dt">TEST_METADATA</span> = {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>    <span class="st">'foo'</span> =&gt; {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>      <span class="co"># Without any appraisal group dependencies</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>      <span class="st">''</span>    =&gt; <span class="st">'✅ 2.1 / ✅ 2.2 / ✅ 2.3 / ✅ 2.4 / ✅ 2.5 / ✅ 2.6 / ✅ 2.7 / ✅ 3.0 / ✅ 3.1 / ✅ 3.2 / ✅ 3.3 / ✅ jruby'</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>      <span class="co"># or with appraisal group definition `bar`</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>      <span class="st">'bar'</span> =&gt; <span class="st">'✅ 2.1 / ✅ 2.2 / ✅ 2.3 / ✅ 2.4 / ✅ 2.5 / ✅ 2.6 / ✅ 2.7 / ✅ 3.0 / ✅ 3.1 / ✅ 3.2 / ✅ 3.3 / ✅ jruby'</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>    },</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>  }</span></code></pre></div>
+<h3 id="running-tests">Running tests</h3>
+<p>Simplest way to run tests is to run <code>bundle exec rake ci</code>, which will run the entire test suite, just as CI does.</p>
+<p><strong>For the core library</strong></p>
+<p>Run the tests for the core library with:</p>
+<pre><code>$ bundle exec rake test:main</code></pre>
+<p><strong>For integrations</strong></p>
+<p>Integrations which interact with dependencies not listed in the <code>ddtrace</code> gemspec will need to load these dependencies to run their tests. Each test task could consist of multiple spec tasks which are executed with different groups of dependencies (likely against different versions or variations).</p>
+<p>To get a list of the test tasks, run <code>bundle exec rake -T test</code></p>
+<p>To run test, run <code>bundle exec rake test:&lt;spec_name&gt;</code></p>
+<p>Take <code>bundle exec rake test:redis</code> as example, multiple versions of <code>redis</code> from different groups are tested.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="dt">TEST_METADATA</span> = {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>  <span class="st">'redis'</span> =&gt; {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>    <span class="st">'redis-3'</span> =&gt; <span class="st">'✅ 2.1 / ✅ 2.2 / ✅ 2.3 / ✅ 2.4 / ✅ 2.5 / ✅ 2.6 / ✅ 2.7 / ✅ 3.0 / ✅ 3.1 / ✅ 3.2 / ✅ 3.3 / ✅ jruby'</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>    <span class="st">'redis-4'</span> =&gt; <span class="st">'❌ 2.1 / ❌ 2.2 / ❌ 2.3 / ✅ 2.4 / ✅ 2.5 / ✅ 2.6 / ✅ 2.7 / ✅ 3.0 / ✅ 3.1 / ✅ 3.2 / ✅ 3.3 / ✅ jruby'</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>    <span class="st">'redis-5'</span> =&gt; <span class="st">'❌ 2.1 / ❌ 2.2 / ❌ 2.3 / ❌ 2.4 / ✅ 2.5 / ✅ 2.6 / ✅ 2.7 / ✅ 3.0 / ✅ 3.1 / ✅ 3.2 / ✅ 3.3 / ✅ jruby'</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>  }</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>}</span></code></pre></div>
+<p><strong>Working with appraisal groups</strong></p>
+<p>Checkout <a href="https://github.com/thoughtbot/appraisal">Apppraisal</a> to learn the basics.</p>
+<p>Groups are defined under <code>appraisal/</code> directory and their names are prefixed with Ruby runtime based on the environment. <code>*.gemfile</code> and <code>*.gemfile.lock</code> from <code>gemfiles/</code> directory are generated from those definitions.</p>
+<p>To find out existing groups in your environment, run <code>bundle exec appraisal list</code></p>
+<p>After introducing a new group definition or changing existing one, run <code>bundle exec appraisal generate</code> to propagate the changes.</p>
+<p>To install dependencies, run <code>bundle exec appraisal install</code>.</p>
+<p>In addition, if you already know which appraisal group definition to work with, you can target a specific group operation with environment vairable <code>APPRAISAL_GROUP</code>, instead of all the groups from your environment. For example:</p>
+<pre><code># This would only install dependencies for `aws` group definition
+APPRAISAL_GROUP=aws bundle exec appraisal install</code></pre>
+<p><strong>Passing arguments to tests</strong></p>
+<p>When running tests, you may pass additional args as parameters to the Rake task. For example:</p>
+<pre><code># Runs Redis tests with seed 1234
+$ bundle exec rake test:redis'[--seed 1234]'</code></pre>
+<p>This can be useful for replicating conditions from CI or isolating certain tests.</p>
+<p><strong>Checking test coverage</strong></p>
+<p>You can check test code coverage by creating a report <em>after</em> running a test suite:</p>
+<pre><code># Run the desired test suite
+$ bundle exec rake test:redis
+# Generate report for the suite executed
+$ bundle exec rake coverage:report</code></pre>
+<p>A webpage will be generated at <code>coverage/report/index.html</code> with the resulting report.</p>
+<p>Because you are likely not running all tests locally, your report will contain partial coverage results. You <em>must</em> check the CI step <code>coverage</code> for the complete test coverage report, ensuring coverage is not decreased.</p>
+<p><strong>Ensuring tests don’t leak resources</strong></p>
+<p>Tests execution can create resources that are hard to track: threads, sockets, files, etc. Because these resources can come from the both the test setup as well as the code under test, making sure all resources are properly disposed is important to prevent the application from inadvertently creating cumulative resources during its execution.</p>
+<p>When running tests that utilize threads, you might see an error message similar to this one:</p>
+<pre><code>Test leaked 1 thread: "Datadog::Workers::AsyncTransport integration tests"
+Ensure all threads are terminated when test finishes:
+1: #&lt;Thread:0x00007fcbc99863d0 /Users/marco.costa/work/dd-trace-rb/spec/spec_helper.rb:145 sleep&gt; (Thread)
+Thread Creation Site:
+        ./dd-trace-rb/spec/ddtrace/workers_integration_spec.rb:245:in 'new'
+        ./dd-trace-rb/spec/ddtrace/workers_integration_spec.rb:245:in 'block (4 levels) in &lt;top (required)&gt;'
+Thread Backtrace:
+        ./dd-trace-rb/spec/ddtrace/workers_integration_spec.rb:262:in 'sleep'
+        .dd-trace-rb/spec/ddtrace/workers_integration_spec.rb:262:in 'block (5 levels) in &lt;top (required)&gt;'
+        ./dd-trace-rb/spec/spec_helper.rb:147:in 'block in initialize'</code></pre>
+<p>This means that this test did not finish all threads by the time the test had finished. In this case, the thread creation can be traced to <code>workers_integration_spec.rb:245:in 'new'</code>. The thread itself is sleeping at <code>workers_integration_spec.rb:262:in 'sleep'</code>.</p>
+<p>The actionable in this case would be to ensure that the thread created in <code>workers_integration_spec.rb:245</code> is properly terminated by invoking <code>Thread#join</code> during the test tear down, which will wait for the thread to finish before returning.</p>
+<p>Depending on the situation, the thread in question might need to be forced to terminate. It’s recommended to have a mechanism in place to terminate it (a shared variable that changes value when the thread should exit), but as a last resort, <code>Thread#terminate</code> forces the thread to finish. Keep in mind that regardless of the termination method, <code>Thread#join</code> must be called to ensure that the thread has completely finished its shutdown process.</p>
+<p><strong>The APM Test Agent</strong></p>
+<p>The APM test agent emulates the APM endpoints of the Datadog Agent. The Test Agent container runs alongside the Ruby tracer locally and in CI, handles all traces during test runs and performs a number of ‘Trace Checks’. For more information on these checks, see: https://github.com/DataDog/dd-apm-test-agent#trace-invariant-checks</p>
+<p>The APM Test Agent also emits helpful logging, which can be viewed in local testing or in CircleCI as a job step for tracer and contrib tests. Locally, to get Test Agent logs:</p>
+<pre><code>$ docker-compose logs -f testagent</code></pre>
+<p>Read more about the APM Test Agent: https://github.com/datadog/dd-apm-test-agent#readme</p>
+<h3 id="checking-code-quality">Checking code quality</h3>
+<p><strong>Linting</strong></p>
+<p>The trace library uses Rubocop to enforce <a href="https://github.com/bbatsov/ruby-style-guide">code style</a> and quality. To check, run:</p>
+<pre><code>$ bundle exec rake rubocop</code></pre>
+<h2 id="appendix">Appendix</h2>
+<h3 id="writing-new-integrations">Writing new integrations</h3>
+<p>Integrations are extensions to the trace library that add support for external dependencies (gems); they typically add auto-instrumentation to popular gems and frameworks. You will find many of our integrations in the <code>contrib</code> folder.</p>
+<p>Some general guidelines for adding new integrations:</p>
+<ul>
+<li>An integration can either be added directly to <code>dd-trace-rb</code>, or developed as its own gem that depends on <code>ddtrace</code>.</li>
+<li>Integrations should implement the configuration API for easy, consistent implementation. (See existing integrations as examples of this.)</li>
+<li>All new integrations require documentation, unit/integration tests written in RSpec, and passing CI builds.</li>
+<li>It’s highly encouraged to share screenshots or other demos of how the new integration looks and works.</li>
+</ul>
+<p>To get started quickly, it’s perfectly fine to copy-paste an existing integration to use as a template, then modify it to match your needs. This is usually the fastest, easiest way to bootstrap a new integration and makes the time-to-first-trace often very quick, usually less than an hour if it’s a simple implementation.</p>
+<p>Once you have it working in your application, you can <a href="#writing-tests">add unit tests</a>, <a href="#running-tests">run them locally</a>, and <a href="#checking-code-quality">check for code quality</a> using Docker Compose.</p>
+<p>Then <a href="../CONTRIBUTING.md#have-a-patch">open a pull request</a> and be sure to add the following to the description:</p>
+<ul>
+<li>
+<a href="./GettingStarted.md">Documentation</a> for the integration, including versions supported.</li>
+<li>Links to the repository/website of the library being integrated</li>
+<li>Screenshots showing a sample trace</li>
+<li>Any additional code snippets, sample apps, benchmarks, or other resources that demonstrate its implementation are a huge plus!</li>
+</ul>
+<h3 id="custom-transport-adapters">Custom transport adapters</h3>
+<p>The tracer can be configured with transports that customize how data is sent and where it is sent to. This is done through the use of adapters: classes that receive generic requests, process them, and return appropriate responses.</p>
+<h4 id="developing-http-transport-adapters">Developing HTTP transport adapters</h4>
+<p>To create a custom HTTP adapter, define a class that responds to <code>call(env)</code> which returns a kind of <code>Datadog::Transport::Response</code>:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a>require <span class="st">'ddtrace/transport/response'</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a><span class="kw">class</span> <span class="dt">CustomAdapter</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>  <span class="co"># Sends HTTP request</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>  <span class="co"># env: Datadog::Transport::HTTP::Env</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a>  <span class="kw">def</span> call(env)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>    <span class="co"># Add custom code here to send data.</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a>    <span class="co"># Then return a Response object.</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a>    <span class="dt">Response</span>.new</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a>  <span class="kw">end</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a>  <span class="kw">class</span> <span class="dt">Response</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a>    include <span class="dt">Datadog</span>::<span class="dt">Transport</span>::<span class="dt">Response</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a>    <span class="co"># Implement the following methods as appropriate</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true"></a>    <span class="co"># for your adapter.</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true"></a>    <span class="co"># Return a String</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true"></a>    <span class="kw">def</span> payload; <span class="kw">end</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true"></a></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true"></a>    <span class="co"># Return true/false</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true"></a>    <span class="co"># Return nil if it does not apply</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true"></a>    <span class="kw">def</span> ok?; <span class="kw">end</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true"></a>    <span class="kw">def</span> unsupported?; <span class="kw">end</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true"></a>    <span class="kw">def</span> not_found?; <span class="kw">end</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true"></a>    <span class="kw">def</span> client_error?; <span class="kw">end</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true"></a>    <span class="kw">def</span> server_error?; <span class="kw">end</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true"></a>    <span class="kw">def</span> internal_error?; <span class="kw">end</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true"></a>  <span class="kw">end</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<p>Optionally, you can register the adapter as a well-known type:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="dt">Datadog</span>::<span class="dt">Transport</span>::<span class="dt">HTTP</span>::<span class="dt">Builder</span>::<span class="dt">REGISTRY</span>.set(<span class="dt">CustomAdapter</span>, <span class="st">:custom</span>)</span></code></pre></div>
+<p>Then pass an adapter instance to the tracer configuration:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="dt">Datadog</span>.configure <span class="kw">do</span> |c|</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a>  c.tracing.transport_options = proc { |t|</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a>    <span class="co"># By name</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a>    t.adapter <span class="st">:custom</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a>    <span class="co"># By instance</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a>    custom_adapter = <span class="dt">CustomAdapter</span>.new</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true"></a>    t.adapter custom_adapter</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true"></a>  }</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true"></a><span class="kw">end</span></span></code></pre></div>
+<h3 id="generating-grpc-proto-stubs-for-tests">Generating GRPC proto stubs for tests</h3>
+<p>If you modify any of the <code>.proto</code> files under <code>./spec/datadog/tracing/contrib/grpc/support/proto</code> used for testing the <code>grpc</code> integration, you’ll need to regenerate the Ruby code by running:</p>
+<pre><code>$ docker run \
+   --platform linux/amd64 \
+   -v ${PWD}:/app \
+   -w /app \
+   ruby:latest \
+   ./spec/datadog/tracing/contrib/grpc/support/gen_proto.sh</code></pre>
+</body>
+</html>

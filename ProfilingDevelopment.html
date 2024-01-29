@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<link rel="stylesheet" href="toc.css">
+</head>
+<body>
+<ul class="toc"><li>
+<a href="#profiling-development">Profiling Development</a><ul>
+<li>
+<a href="#profiling-components-high-level-view">Profiling components high-level view</a><ul></ul>
+</li>
+<li>
+<a href="#initialization">Initialization</a><ul></ul>
+</li>
+<li>
+<a href="#run-time-execution">Run-time execution</a><ul><li>
+<a href="#how-sampling-happens">How sampling happens</a><ul></ul>
+</li></ul>
+</li>
+<li>
+<a href="#how-linking-of-traces-to-profiles-works">How linking of traces to profiles works</a><ul></ul>
+</li>
+</ul>
+</li></ul>
+<h1 id="profiling-development">Profiling Development</h1>
+<p>This file contains development notes specific to the continuous profiler.</p>
+<p>For a more practical view of getting started with development of <code>ddtrace</code>, see &lt;DevelopmentGuide.md&gt;.</p>
+<h2 id="profiling-components-high-level-view">Profiling components high-level view</h2>
+<p>Some of the profiling components referenced below are implemented using C code. As much as possible, that C code is still organized in Ruby classes, and the Ruby classes are still created in their corresponding <code>.rb</code> files.</p>
+<p>Components below live inside &lt;../lib/datadog/profiling&gt;:</p>
+<ul>
+<li>
+<code>Collectors::CodeProvenance</code>: Collects library metadata to power grouping and categorization of stack traces (e.g. to help distinguish user code, from libraries, from the standard library, etc).</li>
+<li>
+<code>Collectors::ThreadContext</code>: Collects samples of living Ruby threads, based on external events (periodic timer, GC happening, allocations, …), recording a metric for them (such as elapsed cpu-time or wall-time, in a few cases) and labeling them with thread id and thread name, as well as with ongoing tracing information, if any. Relies on the <code>Collectors::Stack</code> for the actual stack sampling.</li>
+<li>
+<code>Collectors::CpuAndWallTimeWorker</code>: Triggers the periodic execution of <code>Collectors::ThreadContext</code>.</li>
+<li>
+<code>Collectors::Stack</code>: Used to gather a stack trace from a given Ruby thread. Stores its output on a <code>StackRecorder</code>.</li>
+<li>
+<code>Ext::Forking</code>: Monkey patches <code>Kernel#fork</code>, adding a <code>Kernel#at_fork</code> callback mechanism which is used to restore profiling abilities after the VM forks (such as re-instrumenting the main thread, and restarting profiler threads).</li>
+<li>
+<code>Tasks::Setup</code>: Takes care of loading and applying `Ext::Forking``.</li>
+<li>
+<code>HttpTransport</code>: Implements transmission of profiling payloads to the Datadog agent or backend.</li>
+<li>
+<code>Flush</code>: Entity class used to represent the payload to be reported for a given profile.</li>
+<li>
+<code>Profiler</code>: Profiling entry point, which coordinates collectors and a scheduler.</li>
+<li>
+<code>Exporter</code>: Gathers data from <code>StackRecorder</code> and <code>Collectors::CodeProvenance</code> to be reported as a profile.</li>
+<li>
+<code>Scheduler</code>: Periodically (every 1 minute) takes data from the <code>Exporter</code> and pushes them to the configured transport. Runs on its own background thread.</li>
+<li>
+<code>StackRecorder</code>: Stores stack samples in a native libdatadog data structure and exposes Ruby-level serialization APIs.</li>
+<li>
+<code>TagBuilder</code>: Builds a hash of default plus user tags to be included in a profile</li>
+</ul>
+<h2 id="initialization">Initialization</h2>
+<p>When started via <code>ddtracerb exec</code> (together with <code>DD_PROFILING_ENABLED=true</code>), initialization goes through the following flow:</p>
+<ol type="1">
+<li>&lt;../lib/datadog/profiling/preload.rb&gt; triggers the creation of the profiler instance by calling the method <code>Datadog::Profiling.start_if_enabled</code>
+</li>
+<li>Creation of the profiler instance is handled by <code>Datadog::Configuration</code>, which triggers the configuration of all <code>ddtrace</code> components in <code>#build_components</code>
+</li>
+<li>Inside <code>Datadog::Components</code>, the <code>build_profiler_component</code> method gets called</li>
+<li>The <code>Setup</code> task activates our extensions (<code>Datadog::Profiling::Ext::Forking</code>)</li>
+<li>The <code>build_profiler_component</code> method then creates and wires up the Profiler as such: <code>asciiflow             +----------------------------------+             |             Profiler             |             +-+------------------------------+-+               |                              |               v                              v     +---------+------------------------+   +-+---------+     | Collectors::CpuAndWallTimeWorker |   | Scheduler |     +---------+------------------------+   +-+-------+-+               |                              |       |               |                              |       v               |                              |  +----+----------+     (... see "How sampling happens" ...)     |  | HttpTransport |               |                              |  +---------------+               |                              |               v                              v       +-------+-------+                   +--+-------+       | StackRecorder |&lt;------------------| Exporter |       +---------------+                   +--+-------+                                              |                                              v                               +--------------+-------------+                               | Collectors::CodeProvenance |                               +----------------------------+</code>
+</li>
+<li>The profiler gets started when <code>startup!</code> is called by <code>Datadog::Configuration</code> after component creation.</li>
+</ol>
+<h2 id="run-time-execution">Run-time execution</h2>
+<p>During run-time, the <code>Scheduler</code> and the <code>Collectors::CpuAndWallTimeWorker</code> each execute on their own background thread.</p>
+<p>The <code>Scheduler</code> wakes up every 1 minute to flush the results of the <code>Exporter</code> into the <code>HttpTransport</code> (see above).</p>
+<h3 id="how-sampling-happens">How sampling happens</h3>
+<p>The <code>Collectors::CpuAndWallTimeWorker</code> component is the “active” part of the profiler. It manages periodic timers, tracepoints, etc and is responsible for deciding when to sample, and what kind of sample it is.</p>
+<p>It then kicks off a pipeline of components, each of which is responsible for gathering part of the information for a single sample.</p>
+<pre class="asciiflow"><code>
+ Events:    Timing   GC   Allocations
+               │      │        │
+  ┌────────────v──────v────────v─────┐
+  │ Collectors::CpuAndWallTimeWorker │
+  └┬─────────────────────────────────┘
+   │
+   │ Event details
+   │
+  ┌v──────────────────────────┐
+  │ Collectors::ThreadContext │
+  └┬──────────────────────────┘
+   │
+   │ + Values (cpu-time, ...) and labels (thread id, span id, ...)
+   │
+  ┌v──────────────────┐
+  │ Collectors::Stack │
+  └┬──────────────────┘
+   │
+   │ + Stack traces
+   │
+  ┌v──────────────┐
+  │ StackRecorder │
+  └┬──────────────┘
+   │
+   │ Sample
+   │
+  ┌v───────────┐
+  │ libdatadog │
+  └────────────┘</code></pre>
+<p>All of these components are executed synchronously, and at the end of recording the sample in libdatadog, control is returned back “up” the stack through each one, until the <code>CpuAndWallTimeWorker</code> finishes its work and control returns to the Ruby VM.</p>
+<h2 id="how-linking-of-traces-to-profiles-works">How linking of traces to profiles works</h2>
+<p>The <a href="https://docs.datadoghq.com/tracing/profiler/connect_traces_and_profiles">code hotspots feature</a> allows users to start from a trace and then to investigate the profile that corresponds to that trace.</p>
+<p>This works in two steps: 1. Linking a trace to the profile that was gathered while it executed 2. Enabling the filtering of a profile to contain only the samples relating to a given trace/span</p>
+<p>To link a trace to a profile, we must ensure that both have the same <code>runtime-id</code> tag. This tag is in <code>Datadog::Runtime::Identity.id</code> and is automatically added by both the tracer and the profiler to reported traces/profiles.</p>
+<p>The profiler backend links a trace covering a given time interval to the profiles covering the same time interval, whenever they share the same <code>runtime-id</code>.</p>
+<p>To further enable filtering of a profile to show only samples related to a given trace/span, each sample taken by the profiler is tagged with the <code>local root span id</code> and <code>span id</code> for the given trace/span.</p>
+<p>This is done inside the <code>Collectors::ThreadContext</code> that retrieves a <code>root_span_id</code> and <code>span_id</code>, if available, from the tracer.</p>
+<p>Note that if a given trace executes too fast, it’s possible that the profiler will not contain any samples for that specific trace. Nevertheless, the linking still works and is useful, as it allows users to explore what was going on their profile at that time, even if they can’t filter down to the specific request.</p>
+</body>
+</html>

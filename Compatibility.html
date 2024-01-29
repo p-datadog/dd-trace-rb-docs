@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<link rel="stylesheet" href="toc.css">
+</head>
+<body>
+<ul class="toc">
+<li>
+<a href="#compatibility">Compatibility</a><ul>
+<li>
+<a href="#supported-ruby-interpreters">Supported Ruby interpreters</a><ul></ul>
+</li>
+<li>
+<a href="#supported-web-servers">Supported web servers</a><ul></ul>
+</li>
+<li>
+<a href="#supported-tracing-frameworks">Supported tracing frameworks</a><ul></ul>
+</li>
+<li>
+<a href="#apple-macos-support">Apple macOS support</a><ul></ul>
+</li>
+<li>
+<a href="#microsoft-windows-support">Microsoft Windows support</a><ul></ul>
+</li>
+</ul>
+</li>
+<li>
+<a href="#integrations">Integrations</a><ul><li>
+<a href="#ci-visibility-integrations">CI visibility integrations</a><ul></ul>
+</li></ul>
+</li>
+</ul>
+<h2 id="compatibility">Compatibility</h2>
+<p>The Ruby Datadog Trace library is open source. See the <a href="https://github.com/DataDog/dd-trace-rb">dd-trace-rb</a> GitHub repository for more information.</p>
+<h3 id="supported-ruby-interpreters">Supported Ruby interpreters</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Documentation</th>
+<th>Version</th>
+<th>Support type</th>
+<th>Gem version support</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MRI</td>
+<td>https://www.ruby-lang.org/</td>
+<td>3.3</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>3.2</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>3.1</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>3.0</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>2.7</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>2.6</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>2.5</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>2.4</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>2.3</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>2.2</td>
+<td>Full (except for Profiling)</td>
+<td>Latest</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>2.1</td>
+<td>Full (except for Profiling)</td>
+<td>Latest</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>2.0</td>
+<td>EOL since June 7th, 2021</td>
+<td>&lt; 0.50.0</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>1.9.3</td>
+<td>EOL since August 6th, 2020</td>
+<td>&lt; 0.27.0</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>1.9.1</td>
+<td>EOL since August 6th, 2020</td>
+<td>&lt; 0.27.0</td>
+</tr>
+<tr class="odd">
+<td>JRuby</td>
+<td>https://www.jruby.org</td>
+<td>9.3</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>9.2</td>
+<td>Full</td>
+<td>Latest</td>
+</tr>
+</tbody>
+</table>
+<h3 id="supported-web-servers">Supported web servers</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Documentation</th>
+<th>Version</th>
+<th>Support type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Puma</td>
+<td>http://puma.io/</td>
+<td>2.16+ / 3.6+</td>
+<td>Full</td>
+</tr>
+<tr class="even">
+<td>Unicorn</td>
+<td>https://bogomips.org/unicorn/</td>
+<td>4.8+ / 5.1+</td>
+<td>Full</td>
+</tr>
+<tr class="odd">
+<td>Passenger</td>
+<td>https://www.phusionpassenger.com/</td>
+<td>5.0+</td>
+<td>Full</td>
+</tr>
+</tbody>
+</table>
+<h3 id="supported-tracing-frameworks">Supported tracing frameworks</h3>
+<table>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 47%">
+<col style="width: 21%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Documentation</th>
+<th>Version</th>
+<th>Gem version support</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OpenTracing</td>
+<td>https://github.com/opentracing/opentracing-ruby</td>
+<td>0.4.1+</td>
+<td>&gt;= 0.16.0</td>
+</tr>
+</tbody>
+</table>
+<p><em>Full</em> support indicates all tracer features are available.</p>
+<p><em>Deprecated</em> indicates support will transition to <em>Maintenance</em> in a future release.</p>
+<p><em>Maintenance</em> indicates only critical bugfixes are backported until EOL.</p>
+<p><em>EOL</em> indicates support is no longer provided.</p>
+<h3 id="apple-macos-support">Apple macOS support</h3>
+<p>Use of <code>ddtrace</code> on macOS is supported for development, but not for production deployments.</p>
+<h3 id="microsoft-windows-support">Microsoft Windows support</h3>
+<p>Using <code>ddtrace</code> on Microsoft Windows is currently unsupported. We’ll still accept community contributions and issues, but will consider them as having low priority.</p>
+<h2 id="integrations">Integrations</h2>
+<p>For a list of available integrations, and their configuration options, refer to the following:</p>
+<table>
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 16%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Key</th>
+<th>Versions Supported: MRI</th>
+<th>Versions Supported: JRuby</th>
+<th>How to configure</th>
+<th>Gem source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Action Cable</td>
+<td><code>action_cable</code></td>
+<td><code>&gt;= 5.0</code></td>
+<td><code>&gt;= 5.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#action-cable">Link</a></td>
+<td><a href="https://github.com/rails/rails/tree/master/actioncable">Link</a></td>
+</tr>
+<tr class="even">
+<td>Action Mailer</td>
+<td><code>action_mailer</code></td>
+<td><code>&gt;= 5.0</code></td>
+<td><code>&gt;= 5.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#action-mailer">Link</a></td>
+<td><a href="https://github.com/rails/rails/tree/master/actionmailer">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Action Pack</td>
+<td><code>action_pack</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#action-pack">Link</a></td>
+<td><a href="https://github.com/rails/rails/tree/master/actionpack">Link</a></td>
+</tr>
+<tr class="even">
+<td>Action View</td>
+<td><code>action_view</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#action-view">Link</a></td>
+<td><a href="https://github.com/rails/rails/tree/master/actionview">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Active Job</td>
+<td><code>active_job</code></td>
+<td><code>&gt;= 4.2</code></td>
+<td><code>&gt;= 4.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#active-job">Link</a></td>
+<td><a href="https://github.com/rails/rails/tree/master/activejob">Link</a></td>
+</tr>
+<tr class="even">
+<td>Active Model Serializers</td>
+<td><code>active_model_serializers</code></td>
+<td><code>&gt;= 0.9</code></td>
+<td><code>&gt;= 0.9</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#active-model-serializers">Link</a></td>
+<td><a href="https://github.com/rails-api/active_model_serializers">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Active Record</td>
+<td><code>active_record</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#active-record">Link</a></td>
+<td><a href="https://github.com/rails/rails/tree/master/activerecord">Link</a></td>
+</tr>
+<tr class="even">
+<td>Active Support</td>
+<td><code>active_support</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#active-support">Link</a></td>
+<td><a href="https://github.com/rails/rails/tree/master/activesupport">Link</a></td>
+</tr>
+<tr class="odd">
+<td>AWS</td>
+<td><code>aws</code></td>
+<td><code>&gt;= 2.0</code></td>
+<td><code>&gt;= 2.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#aws">Link</a></td>
+<td><a href="https://github.com/aws/aws-sdk-ruby">Link</a></td>
+</tr>
+<tr class="even">
+<td>Concurrent Ruby</td>
+<td><code>concurrent_ruby</code></td>
+<td><code>&gt;= 0.9</code></td>
+<td><code>&gt;= 0.9</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#concurrent-ruby">Link</a></td>
+<td><a href="https://github.com/ruby-concurrency/concurrent-ruby">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Dalli</td>
+<td><code>dalli</code></td>
+<td><code>&gt;= 2.0</code></td>
+<td><code>&gt;= 2.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#dalli">Link</a></td>
+<td><a href="https://github.com/petergoldstein/dalli">Link</a></td>
+</tr>
+<tr class="even">
+<td>DelayedJob</td>
+<td><code>delayed_job</code></td>
+<td><code>&gt;= 4.1</code></td>
+<td><code>&gt;= 4.1</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#delayedjob">Link</a></td>
+<td><a href="https://github.com/collectiveidea/delayed_job">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Elasticsearch</td>
+<td><code>elasticsearch</code></td>
+<td><code>&gt;= 1.0</code></td>
+<td><code>&gt;= 1.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#elasticsearch">Link</a></td>
+<td><a href="https://github.com/elastic/elasticsearch-ruby">Link</a></td>
+</tr>
+<tr class="even">
+<td>Ethon</td>
+<td><code>ethon</code></td>
+<td><code>&gt;= 0.11</code></td>
+<td><code>&gt;= 0.11</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#ethon">Link</a></td>
+<td><a href="https://github.com/typhoeus/ethon">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Excon</td>
+<td><code>excon</code></td>
+<td><code>&gt;= 0.50</code></td>
+<td><code>&gt;= 0.50</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#excon">Link</a></td>
+<td><a href="https://github.com/excon/excon">Link</a></td>
+</tr>
+<tr class="even">
+<td>Faraday</td>
+<td><code>faraday</code></td>
+<td><code>&gt;= 0.14</code></td>
+<td><code>&gt;= 0.14</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#faraday">Link</a></td>
+<td><a href="https://github.com/lostisland/faraday">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Grape</td>
+<td><code>grape</code></td>
+<td><code>&gt;= 1.0</code></td>
+<td><code>&gt;= 1.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#grape">Link</a></td>
+<td><a href="https://github.com/ruby-grape/grape">Link</a></td>
+</tr>
+<tr class="even">
+<td>GraphQL</td>
+<td><code>graphql</code></td>
+<td><code>&gt;= 1.7.9</code></td>
+<td><code>&gt;= 1.7.9</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#graphql">Link</a></td>
+<td><a href="https://github.com/rmosolgo/graphql-ruby">Link</a></td>
+</tr>
+<tr class="odd">
+<td>gRPC</td>
+<td><code>grpc</code></td>
+<td><code>&gt;= 1.7</code></td>
+<td><em>gem not available</em></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#grpc">Link</a></td>
+<td><a href="https://github.com/grpc/grpc/tree/master/src/rubyc">Link</a></td>
+</tr>
+<tr class="even">
+<td>hanami</td>
+<td><code>hanami</code></td>
+<td>
+<code>&gt;= 1</code>, <code>&lt; 2</code>
+</td>
+<td>
+<code>&gt;= 1</code>, <code>&lt; 2</code>
+</td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#hanami">Link</a></td>
+<td><a href="https://github.com/hanami/hanami">Link</a></td>
+</tr>
+<tr class="odd">
+<td>http.rb</td>
+<td><code>httprb</code></td>
+<td><code>&gt;= 2.0</code></td>
+<td><code>&gt;= 2.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#httprb">Link</a></td>
+<td><a href="https://github.com/httprb/http">Link</a></td>
+</tr>
+<tr class="even">
+<td>httpclient</td>
+<td><code>httpclient</code></td>
+<td><code>&gt;= 2.2</code></td>
+<td><code>&gt;= 2.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#httpclient">Link</a></td>
+<td><a href="https://github.com/nahi/httpclient">Link</a></td>
+</tr>
+<tr class="odd">
+<td>httpx</td>
+<td><code>httpx</code></td>
+<td><code>&gt;= 0.11</code></td>
+<td><code>&gt;= 0.11</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#httpx">Link</a></td>
+<td><a href="https://gitlab.com/honeyryderchuck/httpx">Link</a></td>
+</tr>
+<tr class="even">
+<td>Kafka</td>
+<td><code>ruby-kafka</code></td>
+<td><code>&gt;= 0.7.10</code></td>
+<td><code>&gt;= 0.7.10</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#kafka">Link</a></td>
+<td><a href="https://github.com/zendesk/ruby-kafka">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Makara (via Active Record)</td>
+<td><code>makara</code></td>
+<td><code>&gt;= 0.3.5</code></td>
+<td><code>&gt;= 0.3.5</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#active-record">Link</a></td>
+<td><a href="https://github.com/instacart/makara">Link</a></td>
+</tr>
+<tr class="even">
+<td>MongoDB</td>
+<td><code>mongo</code></td>
+<td><code>&gt;= 2.1</code></td>
+<td><code>&gt;= 2.1</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#mongodb">Link</a></td>
+<td><a href="https://github.com/mongodb/mongo-ruby-driver">Link</a></td>
+</tr>
+<tr class="odd">
+<td>MySQL2</td>
+<td><code>mysql2</code></td>
+<td><code>&gt;= 0.3.21</code></td>
+<td><em>gem not available</em></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#mysql2">Link</a></td>
+<td><a href="https://github.com/brianmario/mysql2">Link</a></td>
+</tr>
+<tr class="even">
+<td>Net/HTTP</td>
+<td><code>http</code></td>
+<td><em>(Any supported Ruby)</em></td>
+<td><em>(Any supported Ruby)</em></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#nethttp">Link</a></td>
+<td><a href="https://ruby-doc.org/stdlib-2.4.0/libdoc/net/http/rdoc/Net/HTTP.html">Link</a></td>
+</tr>
+<tr class="odd">
+<td>OpenSearch</td>
+<td><code>opensearch-ruby</code></td>
+<td><code>&gt;= 1.0.0</code></td>
+<td><code>&gt;= 1.0.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#opensearch">Link</a></td>
+<td><a href="https://github.com/opensearch-project/opensearch-ruby">Link</a></td>
+</tr>
+<tr class="even">
+<td>Postgres</td>
+<td><code>pg</code></td>
+<td><code>&gt;= 0.18.4</code></td>
+<td><em>gem not available</em></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#postgres">Link</a></td>
+<td><a href="https://github.com/ged/ruby-pg">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Presto</td>
+<td><code>presto</code></td>
+<td><code>&gt;= 0.5.14</code></td>
+<td><code>&gt;= 0.5.14</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#presto">Link</a></td>
+<td><a href="https://github.com/treasure-data/presto-client-ruby">Link</a></td>
+</tr>
+<tr class="even">
+<td>Qless</td>
+<td><code>qless</code></td>
+<td><code>&gt;= 0.10.0</code></td>
+<td><code>&gt;= 0.10.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#qless">Link</a></td>
+<td><a href="https://github.com/seomoz/qless">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Que</td>
+<td><code>que</code></td>
+<td><code>&gt;= 1.0.0.beta2</code></td>
+<td><code>&gt;= 1.0.0.beta2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#que">Link</a></td>
+<td><a href="https://github.com/que-rb/que">Link</a></td>
+</tr>
+<tr class="even">
+<td>Racecar</td>
+<td><code>racecar</code></td>
+<td><code>&gt;= 0.3.5</code></td>
+<td><code>&gt;= 0.3.5</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#racecar">Link</a></td>
+<td><a href="https://github.com/zendesk/racecar">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Rack</td>
+<td><code>rack</code></td>
+<td><code>&gt;= 1.1</code></td>
+<td><code>&gt;= 1.1</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#rack">Link</a></td>
+<td><a href="https://github.com/rack/rack">Link</a></td>
+</tr>
+<tr class="even">
+<td>Rails</td>
+<td><code>rails</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#rails">Link</a></td>
+<td><a href="https://github.com/rails/rails">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Rake</td>
+<td><code>rake</code></td>
+<td><code>&gt;= 12.0</code></td>
+<td><code>&gt;= 12.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#rake">Link</a></td>
+<td><a href="https://github.com/ruby/rake">Link</a></td>
+</tr>
+<tr class="even">
+<td>Redis</td>
+<td><code>redis</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#redis">Link</a></td>
+<td><a href="https://github.com/redis/redis-rb">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Resque</td>
+<td><code>resque</code></td>
+<td><code>&gt;= 1.0</code></td>
+<td><code>&gt;= 1.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#resque">Link</a></td>
+<td><a href="https://github.com/resque/resque">Link</a></td>
+</tr>
+<tr class="even">
+<td>Rest Client</td>
+<td><code>rest-client</code></td>
+<td><code>&gt;= 1.8</code></td>
+<td><code>&gt;= 1.8</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#rest-client">Link</a></td>
+<td><a href="https://github.com/rest-client/rest-client">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Roda</td>
+<td><code>roda</code></td>
+<td><code>&gt;= 2.1, &lt;4</code></td>
+<td><code>&gt;= 2.1, &lt;4</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#roda">Link</a></td>
+<td><a href="https://github.com/jeremyevans/roda">Link</a></td>
+</tr>
+<tr class="even">
+<td>Sequel</td>
+<td><code>sequel</code></td>
+<td><code>&gt;= 3.41</code></td>
+<td><code>&gt;= 3.41</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#sequel">Link</a></td>
+<td><a href="https://github.com/jeremyevans/sequel">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Shoryuken</td>
+<td><code>shoryuken</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><code>&gt;= 3.2</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#shoryuken">Link</a></td>
+<td><a href="https://github.com/phstc/shoryuken">Link</a></td>
+</tr>
+<tr class="even">
+<td>Sidekiq</td>
+<td><code>sidekiq</code></td>
+<td><code>&gt;= 3.5.4</code></td>
+<td><code>&gt;= 3.5.4</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#sidekiq">Link</a></td>
+<td><a href="https://github.com/mperham/sidekiq">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Sinatra</td>
+<td><code>sinatra</code></td>
+<td><code>&gt;= 1.4</code></td>
+<td><code>&gt;= 1.4</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#sinatra">Link</a></td>
+<td><a href="https://github.com/sinatra/sinatra">Link</a></td>
+</tr>
+<tr class="even">
+<td>Sneakers</td>
+<td><code>sneakers</code></td>
+<td><code>&gt;= 2.12.0</code></td>
+<td><code>&gt;= 2.12.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#sneakers">Link</a></td>
+<td><a href="https://github.com/jondot/sneakers">Link</a></td>
+</tr>
+<tr class="odd">
+<td>Stripe</td>
+<td><code>stripe</code></td>
+<td><code>&gt;= 5.15.0</code></td>
+<td><code>&gt;= 5.15.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#stripe">Link</a></td>
+<td><a href="https://github.com/stripe/stripe-ruby">Link</a></td>
+</tr>
+<tr class="even">
+<td>Sucker Punch</td>
+<td><code>sucker_punch</code></td>
+<td><code>&gt;= 2.0</code></td>
+<td><code>&gt;= 2.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#sucker-punch">Link</a></td>
+<td><a href="https://github.com/brandonhilkert/sucker_punch">Link</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="ci-visibility-integrations">CI visibility integrations</h3>
+<p>These are the available CI visibility integrations:</p>
+<table>
+<colgroup>
+<col style="width: 7%">
+<col style="width: 8%">
+<col style="width: 16%">
+<col style="width: 18%">
+<col style="width: 14%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Key</th>
+<th>Versions Supported: MRI</th>
+<th>Versions Supported: JRuby</th>
+<th>How to configure</th>
+<th>Gem source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Cucumber</td>
+<td><code>cucumber</code></td>
+<td><code>&gt;= 3.0</code></td>
+<td><code>&gt;= 1.7.16</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#cucumber">Link</a></td>
+<td><a href="https://github.com/cucumber/cucumber-ruby">Link</a></td>
+</tr>
+<tr class="even">
+<td>RSpec</td>
+<td><code>rspec</code></td>
+<td><code>&gt;= 3.0.0</code></td>
+<td><code>&gt;= 3.0.0</code></td>
+<td><a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby#rspec">Link</a></td>
+<td><a href="https://github.com/rspec/rspec">Link</a></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
